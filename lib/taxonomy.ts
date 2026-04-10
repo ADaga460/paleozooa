@@ -64,9 +64,10 @@ export function buildGameTree(gameState: GameState): TaxonomyNode {
   }
 
   if (gameState.isComplete) {
-    for (let i = 0; i < mysteryPath.length; i++) {
-      shownIndices.add(i);
-    }
+    // On game complete, only add the final leaf (the answer).
+    // Don't dump every intermediate — just reveal the answer node
+    // at the bottom of whatever spine was already visible.
+    shownIndices.add(mysteryPath.length - 1);
   }
 
   // Sort indices and build spine nodes only for shown indices

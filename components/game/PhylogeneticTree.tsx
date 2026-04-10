@@ -1,6 +1,5 @@
 'use client';
 import { useMemo } from 'react';
-import { hierarchy, HierarchyPointNode } from 'd3-hierarchy';
 import { TaxonomyNode } from '@/types';
 import { DEPTH_COLORS } from '@/lib/constants';
 
@@ -19,244 +18,228 @@ function getDepthColor(depth: number): string {
 }
 
 /**
- * Custom layout: position nodes manually for a Metazooa-style feel.
- *
- * - Each layer gets a staggered y offset so siblings aren't perfectly
- *   aligned — gives an organic "2 rungs per step" feel.
- * - Generous vertical and horizontal spacing.
+ * Reorder children: spine in center, branches alternate L/R.
  */
-interface LayoutNode {
-  x: number;
-  y: number;
-  data: TaxonomyNode;
-  depth: number;
-  parent: LayoutNode | null;
+function reorderChildren(node: TaxonomyNode, spineSet: Set<string>): TaxonomyNode[] {
+  const spineChild = node.children.find(
+    c => spineSet.has(c.name) && c.rank !== 'guess'
+  );
+  const branches = node.children.filter(c => c !== spineChild);
+  const left: TaxonomyNode[] = [];
+  const right: TaxonomyNode[] = [];
+  branches.forEach((b, i) => (i % 2 === 0 ? right : left).push(b));
+  return [...left.reverse(), ...(spineChild ? [spineChild] : []), ...right];
 }
 
-function layoutTree(root: TaxonomyNode, mysteryPath: string[]): {
-  nodes: LayoutNode[];
-  links: { source: LayoutNode; target: LayoutNode }[];
-  width: number;
-  height: number;
-} {
-  const h = hierarchy<TaxonomyNode>(root, d =>
-    d.children.length > 0 ? d.children : null
-  );
+/* ── Node pill ─────────────────────────────────────────────── */
 
-  const ROW_HEIGHT = 110;       // vertical spacing between layers
-  const STAGGER = 28;           // y offset for alternating siblings
-  const MIN_NODE_WIDTH = 160;   // horizontal spacing per leaf
+function NodePill({
+  node, depth, mysteryPath, mysteryId, gameOver,
+  selectedNodeName, isNew, onNodeClick,
+}: {
+  node: TaxonomyNode; depth: number; mysteryPath: string[];
+  mysteryId: string; gameOver: boolean;
+  selectedNodeName?: string | null; isNew: boolean;
+  onNodeClick?: (n: TaxonomyNode) => void;
+}) {
+  const isGuess = node.rank === 'guess';
+  const isMystery = gameOver && node.organismId === mysteryId;
+  const onSpine = !isGuess && mysteryPath.includes(node.name);
+  const isSel = selectedNodeName === node.name;
 
-  const leafCount = Math.max(1, h.leaves().length);
-  const totalWidth = Math.max(500, leafCount * MIN_NODE_WIDTH);
-  const totalHeight = Math.max(300, (h.height + 1) * ROW_HEIGHT + STAGGER * 2 + 60);
-
-  // First pass: assign x ranges to each subtree based on leaf count
-  const nodes: LayoutNode[] = [];
-  const links: { source: LayoutNode; target: LayoutNode }[] = [];
-
-  function countLeaves(node: TaxonomyNode): number {
-    if (node.children.length === 0) return 1;
-    let sum = 0;
-    for (const c of node.children) sum += countLeaves(c);
-    return sum;
-  }
-
-  function layout(
-    node: TaxonomyNode,
-    depth: number,
-    xMin: number,
-    xMax: number,
-    parentLayout: LayoutNode | null,
-    siblingIndex: number,
-  ): LayoutNode {
-    const isOnSpine = mysteryPath.includes(node.name) && node.rank !== 'guess';
-
-    // Y position: base row + stagger for non-spine siblings
-    const baseY = 40 + depth * ROW_HEIGHT;
-    const staggerOffset = (!isOnSpine && siblingIndex % 2 === 1) ? STAGGER : 0;
-    const y = baseY + staggerOffset;
-
-    const x = (xMin + xMax) / 2;
-
-    const layoutNode: LayoutNode = {
-      x,
-      y,
-      data: node,
-      depth,
-      parent: parentLayout,
-    };
-    nodes.push(layoutNode);
-
-    if (parentLayout) {
-      links.push({ source: parentLayout, target: layoutNode });
-    }
-
-    if (node.children.length > 0) {
-      const totalLeaves = countLeaves(node);
-      let currentX = xMin;
-
-      node.children.forEach((child, i) => {
-        const childLeaves = countLeaves(child);
-        const childWidth = (childLeaves / totalLeaves) * (xMax - xMin);
-        layout(child, depth + 1, currentX, currentX + childWidth, layoutNode, i);
-        currentX += childWidth;
-      });
-    }
-
-    return layoutNode;
-  }
-
-  layout(root, 0, 60, totalWidth - 60, null, 0);
-
-  return { nodes, links, width: totalWidth, height: totalHeight };
-}
-
-export function PhylogeneticTree({
-  revealedTree,
-  mysteryPath,
-  mysteryId,
-  onNodeClick,
-  selectedNodeName,
-  newNodes = [],
-  gameOver,
-}: Props) {
-  const { nodes, links, width, height } = useMemo(
-    () => layoutTree(revealedTree, mysteryPath),
-    [revealedTree, mysteryPath]
-  );
+  let bg: string, border: string, tc: string, bw = 2;
+  if (isMystery) { bg = '#5a9a5a'; border = '#3a7a3a'; tc = '#fff'; bw = 3; }
+  else if (isGuess) { bg = '#faf5eb'; border = '#c4b99a'; tc = '#6b5c3e'; bw = 1.5; }
+  else if (onSpine) {
+    bg = getDepthColor(depth); border = isNew ? '#fbbf24' : bg; tc = '#fff';
+    bw = isNew ? 3 : 2;
+  } else { bg = '#ede7db'; border = '#c4b99a'; tc = '#5a4a30'; }
+  if (isSel) { border = '#2563eb'; bw = 3; }
 
   return (
-    <div className="overflow-auto w-full">
-      <svg width={width} height={height} className="mx-auto block">
-        <defs>
-          <filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#00000018" />
-          </filter>
-        </defs>
-        <style>{`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.85); }
-            to { opacity: 1; transform: scale(1); }
-          }
-          .tree-node-new rect {
-            animation: fadeIn 0.4s ease-out;
-          }
-        `}</style>
-        <g>
-          {links.map((link, i) => {
-            const isSpineLink =
-              mysteryPath.includes(link.source.data.name) &&
-              mysteryPath.includes(link.target.data.name);
-            // Curved path with a natural bend
-            const sx = link.source.x;
-            const sy = link.source.y;
-            const tx = link.target.x;
-            const ty = link.target.y;
-            const midY = (sy + ty) / 2;
-            return (
-              <path
-                key={i}
-                d={`M${sx},${sy + 16} C${sx},${midY} ${tx},${midY} ${tx},${ty - 16}`}
-                fill="none"
-                stroke={isSpineLink ? '#8b6914' : '#c4b090'}
-                strokeWidth={isSpineLink ? 2.5 : 1.5}
-                opacity={isSpineLink ? 0.85 : 0.45}
-              />
-            );
-          })}
-          {nodes.map((node, i) => {
-            const d = node.data;
-            const isGuess = d.rank === 'guess';
-            const isMysteryLeaf = gameOver && d.organismId === mysteryId;
-            const isOnMysteryPath = !isGuess && mysteryPath.includes(d.name);
-            const isNew = newNodes.includes(d.name);
-            const isSelected = selectedNodeName === d.name;
+    <div
+      onClick={() => onNodeClick?.(node)}
+      className="cursor-pointer rounded-lg px-2 py-0.5 text-center whitespace-nowrap shadow-sm select-none"
+      style={{
+        background: bg,
+        border: `${bw}px solid ${border}`,
+        minWidth: 50,
+      }}
+    >
+      <div style={{
+        color: tc,
+        fontSize: 13,
+        fontWeight: 700,
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+      }}>
+        {node.name}
+      </div>
+      <div style={{
+        color: tc === '#fff' ? 'rgba(255,255,255,0.6)' : '#a89a7a',
+        fontSize: 9,
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+      }}>
+        {isGuess ? 'your guess' : node.rank}
+      </div>
+    </div>
+  );
+}
 
-            let fill: string;
-            let stroke: string;
-            let textColor: string;
-            let strokeW = 1.5;
+/* ── Line constants ────────────────────────────────────────── */
 
-            if (isMysteryLeaf) {
-              fill = '#5a9a5a';
-              stroke = '#3a7a3a';
-              textColor = '#ffffff';
-              strokeW = 2.5;
-            } else if (isGuess) {
-              fill = '#faf5eb';
-              stroke = '#c4b99a';
-              textColor = '#6b5c3e';
-              strokeW = 1;
-            } else if (isOnMysteryPath) {
-              fill = getDepthColor(node.depth);
-              stroke = isNew ? '#fbbf24' : getDepthColor(node.depth);
-              textColor = '#ffffff';
-              strokeW = isNew ? 2.5 : 1.5;
-            } else {
-              fill = '#ede7db';
-              stroke = '#c4b99a';
-              textColor = '#5a4a30';
-              strokeW = 1.5;
-            }
+// Base connector lines (subtle, thin)
+const BASE_COLOR = '#d4cbb8';
+const BASE_W = 1.5;
 
-            if (isSelected) {
-              stroke = '#2563eb';
-              strokeW = 3;
-            }
+// Spine overlay (bold, prominent gold)
+const SPINE_COLOR = '#8b6914';
+const SPINE_W = 3.5;
 
-            const label = d.name;
-            const displayLabel =
-              label.length > 18 ? label.slice(0, 17) + '\u2026' : label;
-            const boxWidth = Math.max(90, displayLabel.length * 7.5 + 28);
+// Spacing
+const V_GAP = 6;        // vertical connector from parent pill down to horizontal bar
+const CHILD_PAD = 10;   // padding-top on each child wrapper (horiz bar + vertical stub)
 
-            return (
-              <g
-                key={i}
-                transform={`translate(${node.x},${node.y})`}
-                className={isNew ? 'tree-node-new' : ''}
-                onClick={() => onNodeClick?.(d)}
-                style={{ cursor: 'pointer' }}
-              >
-                <rect
-                  x={-boxWidth / 2}
-                  y={-16}
-                  width={boxWidth}
-                  height={32}
-                  rx={10}
-                  fill={fill}
-                  stroke={stroke}
-                  strokeWidth={strokeW}
-                  filter="url(#nodeShadow)"
-                />
-                <text
-                  x={0}
-                  y={-2}
-                  textAnchor="middle"
-                  fill={textColor}
-                  fontSize={11}
-                  fontWeight={600}
-                  fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-                  style={{ pointerEvents: 'none', userSelect: 'none' }}
+/* ── Recursive tree branch ─────────────────────────────────── */
+
+function Branch({
+  node, spineSet, mysteryPath, mysteryId, gameOver,
+  onNodeClick, selectedNodeName, newNodes, depth,
+}: {
+  node: TaxonomyNode; spineSet: Set<string>;
+  mysteryPath: string[]; mysteryId: string; gameOver: boolean;
+  onNodeClick?: (n: TaxonomyNode) => void;
+  selectedNodeName?: string | null; newNodes: string[];
+  depth: number;
+}) {
+  const ordered = reorderChildren(node, spineSet);
+  const hasKids = ordered.length > 0;
+  const nodeOnSpine = spineSet.has(node.name) && node.rank !== 'guess';
+
+  // Does this node have a spine child?
+  const hasSpineChild = ordered.some(c => spineSet.has(c.name) && c.rank !== 'guess');
+
+  return (
+    <div className="flex flex-col items-center">
+      {/* The node pill */}
+      <NodePill
+        node={node} depth={depth} mysteryPath={mysteryPath}
+        mysteryId={mysteryId} gameOver={gameOver}
+        selectedNodeName={selectedNodeName}
+        isNew={newNodes.includes(node.name)}
+        onNodeClick={onNodeClick}
+      />
+
+      {hasKids && (
+        <>
+          {/* Vertical line from parent pill down to the horizontal bar */}
+          <div className="relative" style={{ width: 6, height: V_GAP }}>
+            {/* Base line (always) */}
+            <div className="absolute" style={{
+              left: '50%', transform: 'translateX(-0.75px)',
+              width: BASE_W, height: '100%', background: BASE_COLOR,
+            }} />
+            {/* Spine overlay (if this node is on spine and has a spine child below) */}
+            {nodeOnSpine && hasSpineChild && (
+              <div className="absolute" style={{
+                left: '50%', transform: `translateX(-${SPINE_W / 2}px)`,
+                width: SPINE_W, height: '100%', background: SPINE_COLOR,
+                borderRadius: 2, zIndex: 2,
+              }} />
+            )}
+          </div>
+
+          {/* Children row */}
+          <div className="flex items-start">
+            {ordered.map((child, i) => {
+              const isOnly = ordered.length === 1;
+              const isFirst = i === 0;
+              const isLast = i === ordered.length - 1;
+              const childOnSpine = spineSet.has(child.name) && child.rank !== 'guess';
+
+              return (
+                <div
+                  key={child.name + '-' + i}
+                  className="relative flex flex-col items-center"
+                  style={{
+                    paddingTop: isOnly ? 0 : CHILD_PAD,
+                    paddingLeft: 1,
+                    paddingRight: 1,
+                  }}
                 >
-                  {displayLabel}
-                </text>
-                <text
-                  x={0}
-                  y={10}
-                  textAnchor="middle"
-                  fill={textColor === '#ffffff' ? 'rgba(255,255,255,0.55)' : '#a89a7a'}
-                  fontSize={8}
-                  fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-                  style={{ pointerEvents: 'none', userSelect: 'none' }}
-                >
-                  {isGuess ? 'your guess' : d.rank}
-                </text>
-              </g>
-            );
-          })}
-        </g>
-      </svg>
+                  {/* Connector lines for multi-child layouts */}
+                  {!isOnly && (
+                    <>
+                      {/* ─── BASE LAYER (thin, subtle) ─── */}
+                      {/* Left half of horizontal bar */}
+                      {!isFirst && (
+                        <div className="absolute left-0" style={{
+                          top: 0, right: '50%',
+                          height: BASE_W, background: BASE_COLOR,
+                        }} />
+                      )}
+                      {/* Right half of horizontal bar */}
+                      {!isLast && (
+                        <div className="absolute" style={{
+                          top: 0, left: '50%', right: 0,
+                          height: BASE_W, background: BASE_COLOR,
+                        }} />
+                      )}
+                      {/* Vertical stub from bar down to child */}
+                      <div className="absolute" style={{
+                        top: 0, left: '50%', transform: 'translateX(-0.75px)',
+                        width: BASE_W, height: CHILD_PAD,
+                        background: BASE_COLOR,
+                      }} />
+
+                      {/* ─── SPINE OVERLAY (bold gold, only on vertical stub) ─── */}
+                      {childOnSpine && (
+                        <div className="absolute" style={{
+                          top: 0, left: '50%', transform: `translateX(-${SPINE_W / 2}px)`,
+                          width: SPINE_W, height: CHILD_PAD,
+                          background: SPINE_COLOR,
+                          borderRadius: 2, zIndex: 2,
+                        }} />
+                      )}
+                    </>
+                  )}
+
+                  {/* Recurse into child */}
+                  <Branch
+                    node={child} spineSet={spineSet}
+                    mysteryPath={mysteryPath} mysteryId={mysteryId}
+                    gameOver={gameOver} onNodeClick={onNodeClick}
+                    selectedNodeName={selectedNodeName}
+                    newNodes={newNodes} depth={depth + 1}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ── Main component ────────────────────────────────────────── */
+
+export function PhylogeneticTree({
+  revealedTree, mysteryPath, mysteryId,
+  onNodeClick, selectedNodeName, newNodes = [], gameOver,
+}: Props) {
+  const spineSet = useMemo(() => new Set(mysteryPath), [mysteryPath]);
+
+  return (
+    <div className="overflow-x-auto w-full py-3">
+      <div className="inline-flex justify-center min-w-full">
+        <Branch
+          node={revealedTree} spineSet={spineSet}
+          mysteryPath={mysteryPath} mysteryId={mysteryId}
+          gameOver={gameOver} onNodeClick={onNodeClick}
+          selectedNodeName={selectedNodeName}
+          newNodes={newNodes} depth={0}
+        />
+      </div>
     </div>
   );
 }
