@@ -16,7 +16,9 @@ export function HowToPlayModal({ onClose }: { onClose: () => void }) {
           <li>Each wrong guess reveals shared ancestors on a phylogenetic tree.</li>
           <li>Use the tree to narrow down possibilities.</li>
           <li>You have <strong className="text-stone-900">20 guesses</strong>.</li>
-          <li>Use <strong className="text-stone-900">Hint</strong> to reveal the next clade, costing 2 guesses.</li>
+          <li><strong className="text-stone-900">Time Period Hint</strong> reveals the era (costs 1 guess).</li>
+          <li><strong className="text-stone-900">Tree Hint</strong> reveals the next clade (costs 4 guesses).</li>
+          <li>Choose <strong className="text-stone-900">Easy</strong>, <strong className="text-stone-900">Normal</strong>, or <strong className="text-stone-900">Hard</strong> difficulty.</li>
           <li>A new animal every day in Daily mode.</li>
           <li>Practice mode gives unlimited random rounds.</li>
         </ul>

@@ -1,7 +1,11 @@
 import { GameState, Stats } from '@/types';
 
 function keyFor(state: GameState): string {
-  return state.mode === 'daily' ? `paleozooa-daily-${state.date}` : 'paleozooa-practice';
+  const diff = state.difficulty ?? 'normal';
+  if (state.mode === 'daily') {
+    return `paleozooa-daily-${diff}-${state.date}`;
+  }
+  return `paleozooa-practice-${diff}`;
 }
 
 export function saveGameState(state: GameState): void {
@@ -9,9 +13,16 @@ export function saveGameState(state: GameState): void {
   localStorage.setItem(keyFor(state), JSON.stringify(state));
 }
 
-export function loadGameState(mode: 'daily' | 'practice', date?: string): GameState | null {
+export function loadGameState(
+  mode: 'daily' | 'practice',
+  difficulty: 'easy' | 'normal' | 'hard',
+  date?: string
+): GameState | null {
   if (typeof window === 'undefined') return null;
-  const key = mode === 'daily' ? `paleozooa-daily-${date}` : 'paleozooa-practice';
+  const key =
+    mode === 'daily'
+      ? `paleozooa-daily-${difficulty}-${date}`
+      : `paleozooa-practice-${difficulty}`;
   const raw = localStorage.getItem(key);
   return raw ? (JSON.parse(raw) as GameState) : null;
 }

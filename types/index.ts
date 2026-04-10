@@ -20,6 +20,7 @@ export interface TaxonomyNode {
 
 export interface GameState {
   mode: 'daily' | 'practice';
+  difficulty: 'easy' | 'normal' | 'hard';
   mysteryOrganism: Organism;
   guesses: Organism[];
   revealedNodes: string[];
@@ -28,6 +29,7 @@ export interface GameState {
   guessesUsed: number;
   maxGuesses: number;
   hintDepth: number;
+  periodRevealed: boolean;
   date?: string;
 }
 

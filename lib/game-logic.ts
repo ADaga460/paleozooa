@@ -16,10 +16,12 @@ export function evaluateGuess(guess: Organism, mystery: Organism): LCAResult {
 
 export function createInitialState(
   mystery: Organism,
-  mode: 'daily' | 'practice'
+  mode: 'daily' | 'practice',
+  difficulty: 'easy' | 'normal' | 'hard' = 'normal'
 ): GameState {
   return {
     mode,
+    difficulty,
     mysteryOrganism: mystery,
     guesses: [],
     revealedNodes: ['Animalia'],
@@ -28,6 +30,7 @@ export function createInitialState(
     guessesUsed: 0,
     maxGuesses: 20,
     hintDepth: 0,
+    periodRevealed: false,
     date: new Date().toDateString(),
   };
 }

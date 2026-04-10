@@ -11,38 +11,50 @@ import organismsData from '@/data/organisms.json';
 
 const allOrganisms = organismsData as Organism[];
 
-export function useGame(mode: 'daily' | 'practice', pool: Organism[] = allOrganisms) {
+type Difficulty = 'easy' | 'normal' | 'hard';
+
+export function useGame(
+  mode: 'daily' | 'practice',
+  difficulty: Difficulty,
+  pool: Organism[]
+) {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const initedFor = useRef<string>('');
 
   const startNewGame = useCallback(
     (force = false) => {
-      let mystery: Organism;
       const date = new Date().toDateString();
-      if (mode === 'daily') {
-        if (!force) {
-          const saved = loadGameState('daily', date);
-          if (saved) {
-            setGameState(saved);
-            return;
-          }
+      const stateKey = `${mode}-${difficulty}`;
+
+      // Always try to restore saved state first (unless forced)
+      if (!force) {
+        const saved = loadGameState(mode, difficulty, date);
+        if (saved) {
+          setGameState(saved);
+          initedFor.current = stateKey;
+          return;
         }
+      }
+
+      let mystery: Organism;
+      if (mode === 'daily') {
         mystery = pool[getDailyOrganismIndex(pool)];
       } else {
         mystery = pool[Math.floor(Math.random() * pool.length)];
       }
-      const state = createInitialState(mystery, mode);
+      const state = createInitialState(mystery, mode, difficulty);
       setGameState(state);
       saveGameState(state);
+      initedFor.current = stateKey;
     },
-    [mode, pool]
+    [mode, difficulty, pool]
   );
 
   useEffect(() => {
-    if (initedFor.current === mode) return;
-    initedFor.current = mode;
+    const stateKey = `${mode}-${difficulty}`;
+    if (initedFor.current === stateKey) return;
     startNewGame();
-  }, [mode, startNewGame]);
+  }, [mode, difficulty, startNewGame]);
 
   const makeGuess = useCallback((guess: Organism) => {
     setGameState(prev => {
@@ -66,10 +78,31 @@ export function useGame(mode: 'daily' | 'practice', pool: Organism[] = allOrgani
     });
   }, []);
 
-  const useHint = useCallback(() => {
+  // Period hint: reveals the time period, costs 1 guess
+  const usePeriodHint = useCallback(() => {
+    setGameState(prev => {
+      if (!prev || prev.isComplete || prev.periodRevealed) return prev;
+      if (prev.guessesUsed + 1 > prev.maxGuesses) return prev;
+
+      const newGuessesUsed = prev.guessesUsed + 1;
+      const isComplete = newGuessesUsed >= prev.maxGuesses;
+
+      const newState: GameState = {
+        ...prev,
+        periodRevealed: true,
+        guessesUsed: newGuessesUsed,
+        isComplete,
+      };
+      saveGameState(newState);
+      return newState;
+    });
+  }, []);
+
+  // Tree hint: reveals next clade on the spine, costs 4 guesses
+  const useTreeHint = useCallback(() => {
     setGameState(prev => {
       if (!prev || prev.isComplete) return prev;
-      if (prev.guessesUsed + 2 > prev.maxGuesses) return prev;
+      if (prev.guessesUsed + 4 > prev.maxGuesses) return prev;
 
       // Find current deepest revealed depth (from guesses + existing hints)
       let currentDepth = prev.hintDepth;
@@ -80,11 +113,10 @@ export function useGame(mode: 'daily' | 'practice', pool: Organism[] = allOrgani
       }
 
       const newHintDepth = currentDepth + 1;
-      // Can't hint past second-to-last (genus level, one above species)
       const maxHintDepth = prev.mysteryOrganism.taxonomyPath.length - 2;
       if (newHintDepth > maxHintDepth) return prev;
 
-      const newGuessesUsed = prev.guessesUsed + 2;
+      const newGuessesUsed = prev.guessesUsed + 4;
       const isComplete = newGuessesUsed >= prev.maxGuesses;
 
       const newState: GameState = {
@@ -98,5 +130,5 @@ export function useGame(mode: 'daily' | 'practice', pool: Organism[] = allOrgani
     });
   }, []);
 
-  return { gameState, makeGuess, useHint, startNewGame, allOrganisms };
+  return { gameState, makeGuess, usePeriodHint, useTreeHint, startNewGame, allOrganisms };
 }

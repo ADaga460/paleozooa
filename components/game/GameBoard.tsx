@@ -24,6 +24,27 @@ function filterByDifficulty(organisms: Organism[], difficulty: Difficulty): Orga
   }
 }
 
+function useCountdown() {
+  const [timeLeft, setTimeLeft] = useState('');
+  useEffect(() => {
+    function update() {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const diff = tomorrow.getTime() - now.getTime();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(`${h}h ${m}m ${s}s`);
+    }
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return timeLeft;
+}
+
 interface SelectedInfo {
   name: string;
   rank: string;
@@ -40,9 +61,10 @@ export function GameBoard() {
   const prevNodeNamesRef = useRef<string[]>([]);
   const recordedCompleteRef = useRef<string>('');
   const prevGuessCount = useRef(0);
+  const countdown = useCountdown();
 
   const pool = useMemo(() => filterByDifficulty(allOrganisms, difficulty), [difficulty]);
-  const { gameState, makeGuess, useHint, startNewGame } = useGame(mode, pool);
+  const { gameState, makeGuess, usePeriodHint, useTreeHint, startNewGame } = useGame(mode, difficulty, pool);
   const { stats, recordResult } = useStats();
 
   useEffect(() => {
@@ -130,7 +152,6 @@ export function GameBoard() {
   // What to display: clicked node (taxon or guess) takes priority, else auto
   const cardInfo = useMemo(() => {
     if (selectedInfo) {
-      // If it's a guess organism, use its wikipediaSlug for lookup
       if (selectedInfo.organismId) {
         const org = allOrganisms.find(o => o.id === selectedInfo.organismId);
         if (org) {
@@ -154,7 +175,7 @@ export function GameBoard() {
     return autoCardInfo;
   }, [selectedInfo, autoCardInfo]);
 
-  // Compute current effective depth for hint disabled check
+  // Compute current effective depth for tree hint disabled check
   const currentEffectiveDepth = useMemo(() => {
     if (!gameState) return 0;
     let depth = gameState.hintDepth;
@@ -166,8 +187,13 @@ export function GameBoard() {
     return depth;
   }, [gameState]);
 
-  const hintDisabled = !gameState || gameState.guessesUsed + 2 > gameState.maxGuesses ||
+  const treeHintDisabled = !gameState || gameState.isComplete ||
+    gameState.guessesUsed + 4 > gameState.maxGuesses ||
     currentEffectiveDepth + 1 > (gameState?.mysteryOrganism.taxonomyPath.length ?? 0) - 2;
+
+  const periodHintDisabled = !gameState || gameState.isComplete ||
+    gameState.periodRevealed ||
+    gameState.guessesUsed + 1 > gameState.maxGuesses;
 
   const handleNodeClick = (node: TaxonomyNode) => {
     setSelectedInfo({
@@ -188,8 +214,8 @@ export function GameBoard() {
   const guessesRemaining = gameState.maxGuesses - gameState.guessesUsed;
   const statusLine = gameState.isComplete
     ? gameState.isWon
-      ? `You win! The answer is **${gameState.mysteryOrganism.commonName}**. ${guessesRemaining} remaining`
-      : `Out of guesses. The answer was **${gameState.mysteryOrganism.commonName}**.`
+      ? `You win! The answer is ${gameState.mysteryOrganism.commonName}. ${guessesRemaining} remaining`
+      : `Out of guesses. The answer was ${gameState.mysteryOrganism.commonName}.`
     : `${guessesRemaining} guess${guessesRemaining === 1 ? '' : 'es'} remaining`;
 
   return (
@@ -217,7 +243,6 @@ export function GameBoard() {
                     onClick={() => {
                       if (d !== difficulty) {
                         setDifficulty(d);
-                        startNewGame(true);
                       }
                     }}
                     className={`px-3 py-1 text-xs rounded-md border transition-colors capitalize ${
@@ -239,25 +264,46 @@ export function GameBoard() {
                   usedIds={gameState.guesses.map(g => g.id)}
                   onGuess={makeGuess}
                 />
-                <button
-                  onClick={useHint}
-                  disabled={hintDisabled}
-                  className="w-full bg-[#e8e0d0] border border-[#c4b99a] text-[#6b5c3e] rounded-lg py-1.5 text-sm hover:bg-[#ded6c4] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Hint (-2 guesses)
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={usePeriodHint}
+                    disabled={periodHintDisabled}
+                    className="flex-1 bg-[#e8e0d0] border border-[#c4b99a] text-[#6b5c3e] rounded-lg py-1.5 text-xs hover:bg-[#ded6c4] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {gameState.periodRevealed
+                      ? `🕐 ${gameState.mysteryOrganism.timePeriod}`
+                      : 'Time Period Hint (-1)'}
+                  </button>
+                  <button
+                    onClick={useTreeHint}
+                    disabled={treeHintDisabled}
+                    className="flex-1 bg-[#e8e0d0] border border-[#c4b99a] text-[#6b5c3e] rounded-lg py-1.5 text-xs hover:bg-[#ded6c4] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Tree Hint (-4)
+                  </button>
+                </div>
               </>
+            )}
+
+            {/* Show revealed period even after hints section */}
+            {gameState.periodRevealed && !gameState.isComplete && (
+              <p className="text-xs text-[#6b5c3e] bg-[#ede7db] border border-[#d4cbb8] rounded-lg px-3 py-2">
+                🕐 Time Period: <span className="font-semibold">{gameState.mysteryOrganism.timePeriod}</span>{' '}
+                <span className="text-stone-400">({gameState.mysteryOrganism.timePeriodMya} MYA)</span>
+              </p>
             )}
 
             {gameState.isComplete && (
               <div className="space-y-2">
                 <p className="text-sm text-stone-600">
-                  Share your score or play a practice game!
+                  {mode === 'daily'
+                    ? `Next puzzle in ${countdown}`
+                    : 'Share your score or play again!'}
                 </p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
-                      const text = `Paleozooa ${gameState.mode} - ${gameState.isWon ? `${gameState.guessesUsed}/${gameState.maxGuesses}` : 'X/20'}`;
+                      const text = `Paleozooa ${gameState.mode} (${gameState.difficulty}) - ${gameState.isWon ? `${gameState.guessesUsed}/${gameState.maxGuesses}` : 'X/20'}`;
                       navigator.clipboard?.writeText(text);
                     }}
                     className="bg-[#e8e0d0] border border-[#c4b99a] text-[#6b5c3e] rounded-lg px-4 py-1.5 text-sm hover:bg-[#ded6c4] transition-colors flex items-center gap-1.5"
@@ -266,12 +312,12 @@ export function GameBoard() {
                   </button>
                   <button
                     onClick={() => {
-                      setMode('practice');
-                      startNewGame(true);
+                      if (mode !== 'practice') setMode('practice');
+                      else startNewGame(true);
                     }}
-                    className="bg-[#5a8f5a] border border-[#4a7a4a] text-white rounded-lg px-4 py-1.5 text-sm hover:bg-[#4d7d4d] transition-colors"
+                    className="bg-[#5a8f5a] border-[#4a7a4a] text-white rounded-lg px-4 py-1.5 text-sm hover:bg-[#4d7d4d] transition-colors"
                   >
-                    Practice
+                    {mode === 'practice' ? 'New Game' : 'Practice'}
                   </button>
                 </div>
               </div>
