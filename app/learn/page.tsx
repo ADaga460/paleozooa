@@ -20,9 +20,7 @@ function buildGroups(): CladeGroup[] {
       name: 'Large Theropods',
       description: 'Somehow the closest thing to chickens.',
       organisms: allOrganisms.filter(o => {
-        const p = o.taxonomyPath;
-        if (!p.includes('Theropoda')) return false;
-        const ids = ['tyrannosaurus','allosaurus','spinosaurus','carnotaurus','giganotosaurus','megalosaurus','majungasaurus','suchomimus','carcharodontosaurus','ceratosaurus','baryonyx','dilophosaurus'];
+        const ids = ['tyrannosaurus','allosaurus','spinosaurus','carnotaurus','giganotosaurus','megalosaurus','majungasaurus','suchomimus','carcharodontosaurus','ceratosaurus','baryonyx','dilophosaurus','acrocanthosaurus','concavenator','neovenator','albertosaurus','tarbosaurus','irritator'];
         return ids.includes(o.id);
       }),
     },
@@ -30,7 +28,7 @@ function buildGroups(): CladeGroup[] {
       name: 'Raptors & Small Theropods',
       description: 'Agile, small, often feathered predators... despite Jurassic Park.',
       organisms: allOrganisms.filter(o => {
-        const ids = ['velociraptor','deinonychus','utahraptor','microraptor','compsognathus','coelophysis','troodon','oviraptor','gallimimus','therizinosaurus','deinocheirus','yi'];
+        const ids = ['velociraptor','deinonychus','utahraptor','microraptor','compsognathus','coelophysis','troodon','oviraptor','gallimimus','therizinosaurus','deinocheirus','yi','sinosauropteryx','citipati'];
         return ids.includes(o.id);
       }),
     },
@@ -39,6 +37,14 @@ function buildGroups(): CladeGroup[] {
       description: 'The true avian dinosaurs.',
       organisms: allOrganisms.filter(o => {
         const ids = ['archaeopteryx','confuciusornis','hesperornis','ichthyornis'];
+        return ids.includes(o.id);
+      }),
+    },
+    {
+      name: 'The First Dinosaurs',
+      description: 'The earliest known dinosaurs, from the Late Triassic.',
+      organisms: allOrganisms.filter(o => {
+        const ids = ['herrerasaurus','eoraptor'];
         return ids.includes(o.id);
       }),
     },

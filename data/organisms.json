@@ -319,6 +319,7 @@
       "Ornithopoda",
       "Hadrosauridae",
       "Lambeosaurinae",
+      "Parasaurolophini",
       "Parasaurolophus"
     ],
     "taxonomyRanks": [
@@ -330,6 +331,7 @@
       "clade",
       "family",
       "subfamily",
+      "tribe",
       "genus"
     ],
     "timePeriod": "Late Cretaceous",
@@ -628,6 +630,7 @@
       "Tetanurae",
       "Carnosauria",
       "Carcharodontosauridae",
+      "Giganotosaurinae",
       "Giganotosaurus"
     ],
     "taxonomyRanks": [
@@ -640,6 +643,7 @@
       "clade",
       "clade",
       "family",
+      "subfamily",
       "genus"
     ],
     "timePeriod": "Late Cretaceous",
@@ -1081,6 +1085,7 @@
       "Ornithopoda",
       "Hadrosauridae",
       "Lambeosaurinae",
+      "Lambeosaurini",
       "Corythosaurus"
     ],
     "taxonomyRanks": [
@@ -1092,6 +1097,7 @@
       "clade",
       "family",
       "subfamily",
+      "tribe",
       "genus"
     ],
     "timePeriod": "Late Cretaceous",
@@ -2450,6 +2456,7 @@
       "Ornithopoda",
       "Hadrosauridae",
       "Lambeosaurinae",
+      "Lambeosaurini",
       "Lambeosaurus"
     ],
     "taxonomyRanks": [
@@ -2461,6 +2468,7 @@
       "clade",
       "family",
       "subfamily",
+      "tribe",
       "genus"
     ],
     "timePeriod": "Late Cretaceous",
@@ -2522,6 +2530,7 @@
       "Thyreophora",
       "Ankylosauria",
       "Nodosauridae",
+      "Nodosaurinae",
       "Nodosaurus"
     ],
     "taxonomyRanks": [
@@ -2533,6 +2542,7 @@
       "clade",
       "clade",
       "family",
+      "subfamily",
       "genus"
     ],
     "timePeriod": "Late Cretaceous",
@@ -3059,6 +3069,7 @@
       "Tetanurae",
       "Carnosauria",
       "Carcharodontosauridae",
+      "Giganotosaurinae",
       "Carcharodontosaurus"
     ],
     "taxonomyRanks": [
@@ -3071,6 +3082,7 @@
       "clade",
       "clade",
       "family",
+      "subfamily",
       "genus"
     ],
     "timePeriod": "Late Cretaceous",
@@ -3445,6 +3457,7 @@
       "Thyreophora",
       "Ankylosauria",
       "Nodosauridae",
+      "Polacanthinae",
       "Sauropelta"
     ],
     "taxonomyRanks": [
@@ -3456,6 +3469,7 @@
       "clade",
       "clade",
       "family",
+      "subfamily",
       "genus"
     ],
     "timePeriod": "Early Cretaceous",
@@ -3482,6 +3496,7 @@
       "Thyreophora",
       "Ankylosauria",
       "Nodosauridae",
+      "Polacanthinae",
       "Gastonia"
     ],
     "taxonomyRanks": [
@@ -3493,6 +3508,7 @@
       "clade",
       "clade",
       "family",
+      "subfamily",
       "genus"
     ],
     "timePeriod": "Early Cretaceous",
@@ -3756,6 +3772,1013 @@
       "reptile",
       "mosasaur",
       "predator"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "patagotitan",
+    "commonName": "Patagotitan",
+    "scientificName": "Patagotitan mayorum",
+    "wikipediaSlug": "Patagotitan",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Sauropodomorpha",
+      "Sauropoda",
+      "Macronaria",
+      "Titanosauria",
+      "Lognkosauridae",
+      "Patagotitan"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "101-95",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "sauropod",
+      "titanosaur",
+      "largest"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "giraffatitan",
+    "commonName": "Giraffatitan",
+    "scientificName": "Giraffatitan brancai",
+    "wikipediaSlug": "Giraffatitan",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Sauropodomorpha",
+      "Sauropoda",
+      "Macronaria",
+      "Brachiosauridae",
+      "Giraffatitan"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Jurassic",
+    "timePeriodMya": "154-150",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "sauropod",
+      "tall"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "acrocanthosaurus",
+    "commonName": "Acrocanthosaurus",
+    "scientificName": "Acrocanthosaurus atokensis",
+    "wikipediaSlug": "Acrocanthosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Theropoda",
+      "Tetanurae",
+      "Carnosauria",
+      "Carcharodontosauridae",
+      "Acrocanthosaurinae",
+      "Acrocanthosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "subfamily",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "116-110",
+    "tags": [
+      "dinosaur",
+      "predator",
+      "theropod",
+      "large"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "concavenator",
+    "commonName": "Concavenator",
+    "scientificName": "Concavenator corcovatus",
+    "wikipediaSlug": "Concavenator",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Theropoda",
+      "Tetanurae",
+      "Carnosauria",
+      "Carcharodontosauridae",
+      "Acrocanthosaurinae",
+      "Concavenator"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "subfamily",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "130-125",
+    "tags": [
+      "dinosaur",
+      "predator",
+      "theropod",
+      "humped"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "neovenator",
+    "commonName": "Neovenator",
+    "scientificName": "Neovenator salerii",
+    "wikipediaSlug": "Neovenator",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Theropoda",
+      "Tetanurae",
+      "Carnosauria",
+      "Neovenatoridae",
+      "Neovenator"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "130-125",
+    "tags": [
+      "dinosaur",
+      "predator",
+      "theropod"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "albertosaurus",
+    "commonName": "Albertosaurus",
+    "scientificName": "Albertosaurus sarcophagus",
+    "wikipediaSlug": "Albertosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Theropoda",
+      "Tetanurae",
+      "Coelurosauria",
+      "Tyrannosauridae",
+      "Albertosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "70-66",
+    "tags": [
+      "dinosaur",
+      "predator",
+      "theropod",
+      "tyrannosaur"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "tarbosaurus",
+    "commonName": "Tarbosaurus",
+    "scientificName": "Tarbosaurus bataar",
+    "wikipediaSlug": "Tarbosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Theropoda",
+      "Tetanurae",
+      "Coelurosauria",
+      "Tyrannosauridae",
+      "Tarbosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "70-66",
+    "tags": [
+      "dinosaur",
+      "predator",
+      "theropod",
+      "tyrannosaur"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "irritator",
+    "commonName": "Irritator",
+    "scientificName": "Irritator challengeri",
+    "wikipediaSlug": "Irritator",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Theropoda",
+      "Tetanurae",
+      "Spinosauridae",
+      "Spinosaurinae",
+      "Irritator"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "subfamily",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "113-100",
+    "tags": [
+      "dinosaur",
+      "predator",
+      "theropod",
+      "spinosaurid"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "sinosauropteryx",
+    "commonName": "Sinosauropteryx",
+    "scientificName": "Sinosauropteryx prima",
+    "wikipediaSlug": "Sinosauropteryx",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Theropoda",
+      "Tetanurae",
+      "Coelurosauria",
+      "Compsognathidae",
+      "Sinosauropteryx"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "124-122",
+    "tags": [
+      "dinosaur",
+      "predator",
+      "feathered",
+      "small"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "citipati",
+    "commonName": "Citipati",
+    "scientificName": "Citipati osmolskae",
+    "wikipediaSlug": "Citipati",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Theropoda",
+      "Tetanurae",
+      "Coelurosauria",
+      "Maniraptora",
+      "Oviraptoridae",
+      "Citipati"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "75-71",
+    "tags": [
+      "dinosaur",
+      "theropod",
+      "oviraptorosaur",
+      "nesting"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "herrerasaurus",
+    "commonName": "Herrerasaurus",
+    "scientificName": "Herrerasaurus ischigualastensis",
+    "wikipediaSlug": "Herrerasaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Herrerasauridae",
+      "Herrerasaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Triassic",
+    "timePeriodMya": "231-229",
+    "tags": [
+      "dinosaur",
+      "predator",
+      "basal",
+      "early"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "eoraptor",
+    "commonName": "Eoraptor",
+    "scientificName": "Eoraptor lunensis",
+    "wikipediaSlug": "Eoraptor",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Saurischia",
+      "Eoraptidae",
+      "Eoraptor"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Triassic",
+    "timePeriodMya": "231-228",
+    "tags": [
+      "dinosaur",
+      "omnivore",
+      "basal",
+      "early"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "diabloceratops",
+    "commonName": "Diabloceratops",
+    "scientificName": "Diabloceratops eatoni",
+    "wikipediaSlug": "Diabloceratops",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Marginocephalia",
+      "Ceratopsia",
+      "Ceratopsidae",
+      "Centrosaurinae",
+      "Centrosaurini",
+      "Diabloceratops"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "subfamily",
+      "tribe",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "79-77",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "ceratopsian",
+      "horned"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "leptoceratops",
+    "commonName": "Leptoceratops",
+    "scientificName": "Leptoceratops gracilis",
+    "wikipediaSlug": "Leptoceratops",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Marginocephalia",
+      "Ceratopsia",
+      "Leptoceratopsidae",
+      "Leptoceratops"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "68-66",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "ceratopsian",
+      "small"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "borealopelta",
+    "commonName": "Borealopelta",
+    "scientificName": "Borealopelta markmitchelli",
+    "wikipediaSlug": "Borealopelta",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Thyreophora",
+      "Ankylosauria",
+      "Nodosauridae",
+      "Nodosaurinae",
+      "Borealopelta"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "subfamily",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "112-110",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "armored",
+      "nodosaur",
+      "mummified"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "polacanthus",
+    "commonName": "Polacanthus",
+    "scientificName": "Polacanthus foxii",
+    "wikipediaSlug": "Polacanthus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Thyreophora",
+      "Ankylosauria",
+      "Nodosauridae",
+      "Polacanthinae",
+      "Polacanthus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "subfamily",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "130-125",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "armored",
+      "spiky"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "edmontonia",
+    "commonName": "Edmontonia",
+    "scientificName": "Edmontonia longiceps",
+    "wikipediaSlug": "Edmontonia",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Thyreophora",
+      "Ankylosauria",
+      "Nodosauridae",
+      "Nodosaurinae",
+      "Edmontonia"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "subfamily",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "76-68",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "armored",
+      "nodosaur"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "huayangosaurus",
+    "commonName": "Huayangosaurus",
+    "scientificName": "Huayangosaurus taibaii",
+    "wikipediaSlug": "Huayangosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Thyreophora",
+      "Stegosauria",
+      "Huayangosauridae",
+      "Huayangosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Middle Jurassic",
+    "timePeriodMya": "165-160",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "stegosaur",
+      "basal"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "scutellosaurus",
+    "commonName": "Scutellosaurus",
+    "scientificName": "Scutellosaurus lawleri",
+    "wikipediaSlug": "Scutellosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Thyreophora",
+      "Scutellosauridae",
+      "Scutellosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Early Jurassic",
+    "timePeriodMya": "196-183",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "armored",
+      "basal",
+      "small"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "shantungosaurus",
+    "commonName": "Shantungosaurus",
+    "scientificName": "Shantungosaurus giganteus",
+    "wikipediaSlug": "Shantungosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Ornithopoda",
+      "Hadrosauridae",
+      "Hadrosaurinae",
+      "Shantungosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "subfamily",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "73-65",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "hadrosaur",
+      "largest"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "tsintaosaurus",
+    "commonName": "Tsintaosaurus",
+    "scientificName": "Tsintaosaurus spinorhinus",
+    "wikipediaSlug": "Tsintaosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Ornithopoda",
+      "Hadrosauridae",
+      "Lambeosaurinae",
+      "Parasaurolophini",
+      "Tsintaosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "subfamily",
+      "tribe",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "76-74",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "hadrosaur",
+      "crested"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "muttaburrasaurus",
+    "commonName": "Muttaburrasaurus",
+    "scientificName": "Muttaburrasaurus langdoni",
+    "wikipediaSlug": "Muttaburrasaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Dinosauria",
+      "Ornithischia",
+      "Ornithopoda",
+      "Rhabdodontidae",
+      "Muttaburrasaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "107-103",
+    "tags": [
+      "dinosaur",
+      "herbivore",
+      "ornithopod",
+      "australian"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "dsungaripterus",
+    "commonName": "Dsungaripterus",
+    "scientificName": "Dsungaripterus weii",
+    "wikipediaSlug": "Dsungaripterus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Pterosauria",
+      "Pterodactyloidea",
+      "Dsungaripteridae",
+      "Dsungaripterus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "130-120",
+    "tags": [
+      "pterosaur",
+      "flying",
+      "shellfish-eater"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "tapejara",
+    "commonName": "Tapejara",
+    "scientificName": "Tapejara wellnhoferi",
+    "wikipediaSlug": "Tapejara",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Pterosauria",
+      "Pterodactyloidea",
+      "Tapejaridae",
+      "Tapejara"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Early Cretaceous",
+    "timePeriodMya": "112-108",
+    "tags": [
+      "pterosaur",
+      "flying",
+      "crested"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "dakosaurus",
+    "commonName": "Dakosaurus",
+    "scientificName": "Dakosaurus maximus",
+    "wikipediaSlug": "Dakosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Pseudosuchia",
+      "Crocodylomorpha",
+      "Metriorhynchidae",
+      "Dakosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Jurassic",
+    "timePeriodMya": "157-137",
+    "tags": [
+      "marine",
+      "reptile",
+      "crocodylomorph",
+      "predator"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "ophthalmosaurus",
+    "commonName": "Ophthalmosaurus",
+    "scientificName": "Ophthalmosaurus icenicus",
+    "wikipediaSlug": "Ophthalmosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Ichthyosauria",
+      "Ophthalmosauridae",
+      "Ophthalmosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Jurassic",
+    "timePeriodMya": "165-145",
+    "tags": [
+      "marine",
+      "reptile",
+      "ichthyosaur",
+      "large-eyed"
+    ],
+    "difficulty": 3
+  },
+  {
+    "id": "styxosaurus",
+    "commonName": "Styxosaurus",
+    "scientificName": "Styxosaurus snowii",
+    "wikipediaSlug": "Styxosaurus",
+    "taxonomyPath": [
+      "Animalia",
+      "Chordata",
+      "Reptilia",
+      "Sauropterygia",
+      "Plesiosauria",
+      "Plesiosauroidea",
+      "Elasmosauridae",
+      "Styxosaurus"
+    ],
+    "taxonomyRanks": [
+      "kingdom",
+      "phylum",
+      "class",
+      "clade",
+      "clade",
+      "clade",
+      "family",
+      "genus"
+    ],
+    "timePeriod": "Late Cretaceous",
+    "timePeriodMya": "85-70",
+    "tags": [
+      "marine",
+      "reptile",
+      "plesiosaur",
+      "long-necked"
     ],
     "difficulty": 3
   }
