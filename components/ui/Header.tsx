@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 
 export function Header({
   mode,
@@ -33,6 +34,12 @@ export function Header({
             {m === 'daily' ? 'Daily' : 'Practice'}
           </button>
         ))}
+        <Link
+          href="/learn"
+          className="bg-[#faf5eb] border border-[#d4cbb8] rounded-lg px-2 py-1 text-xs text-[#6b5c3e] hover:bg-[#e8e0d0] transition-colors"
+        >
+          Learn
+        </Link>
         <button
           onClick={onShowHowTo}
           className="bg-[#faf5eb] border border-[#d4cbb8] rounded-lg px-2 py-1 text-xs text-[#6b5c3e] hover:bg-[#e8e0d0] transition-colors"
