@@ -124,7 +124,6 @@ export default function LearnPage() {
           <h1 className="text-lg font-bold text-stone-800 tracking-wider font-serif">
             PALEOZOOA
           </h1>
-          <p className="text-xs text-[#9a8a6a]">Learn about the dinosaurs</p>
         </div>
         <Link
           href="/"

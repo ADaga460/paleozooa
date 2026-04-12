@@ -18,7 +18,6 @@ export function Header({
         <h1 className="text-lg font-bold text-stone-800 tracking-wider font-serif">
           PALEOZOOA
         </h1>
-        <p className="text-xs text-[#9a8a6a]">Guess the Mesozoic animal</p>
       </div>
       <div className="flex gap-2 items-center">
         {(['daily', 'practice'] as const).map(m => (

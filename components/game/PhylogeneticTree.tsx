@@ -31,73 +31,83 @@ function reorderChildren(node: TaxonomyNode, spineSet: Set<string>): TaxonomyNod
   return [...left.reverse(), ...(spineChild ? [spineChild] : []), ...right];
 }
 
+/* ── Line constants ────────────────────────────────────────── */
+
+// Spacing increased for a more "sweeping" look
+const V_GAP = 16;       
+const CHILD_PAD = 24;   
+
+// Thicker lines to match Metazooa
+const BASE_W = 2.5;
+const SPINE_W = 4.5;
+
 /* ── Node pill ─────────────────────────────────────────────── */
 
 function NodePill({
-  node, depth, mysteryPath, mysteryId, gameOver,
-  selectedNodeName, isNew, onNodeClick,
+  node, depth, mysteryPath, mysteryId, gameOver, selectedNodeName, isNew, onNodeClick,
 }: {
-  node: TaxonomyNode; depth: number; mysteryPath: string[];
-  mysteryId: string; gameOver: boolean;
+  node: TaxonomyNode; depth: number; mysteryPath: string[]; mysteryId: string; gameOver: boolean;
   selectedNodeName?: string | null; isNew: boolean;
   onNodeClick?: (n: TaxonomyNode) => void;
 }) {
   const isGuess = node.rank === 'guess';
   const isMystery = gameOver && node.organismId === mysteryId;
-  const onSpine = !isGuess && mysteryPath.includes(node.name);
   const isSel = selectedNodeName === node.name;
+  const onSpine = !isGuess && mysteryPath.includes(node.name);
+
+  // Determine colors based on depth (guesses inherit parent's color)
+  const nodeColor = getDepthColor(depth);
+  const parentColor = depth > 0 ? getDepthColor(depth - 1) : nodeColor;
 
   let bg: string, border: string, tc: string, bw = 2;
-  if (isMystery) { bg = '#5a9a5a'; border = '#3a7a3a'; tc = '#fff'; bw = 3; }
-  else if (isGuess) { bg = '#faf5eb'; border = '#c4b99a'; tc = '#6b5c3e'; bw = 1.5; }
-  else if (onSpine) {
-    bg = getDepthColor(depth); border = isNew ? '#fbbf24' : bg; tc = '#fff';
+
+  if (isMystery) { 
+    bg = '#2e7d32'; border = '#1b5e20'; tc = '#fff'; bw = 3; // Darker green for the target
+  } else if (isGuess) { 
+    bg = '#ffffff'; border = parentColor; tc = parentColor; bw = 1.5; // Guesses inherit parent color
+  } else if (onSpine) { 
+    // Spine nodes get the solid depth color
+    bg = nodeColor; border = isNew ? '#fbbf24' : nodeColor; tc = '#fff'; bw = isNew ? 3 : 2;
+  } else {
+    // Off-spine nodes (greyed out but visible)
+    bg = '#f3f4f6'; // light grey background
+    border = isNew ? '#fbbf24' : '#d1d5db'; // standard grey border, or gold if newly revealed
+    tc = '#6b7280'; // medium grey text
     bw = isNew ? 3 : 2;
-  } else { bg = '#ede7db'; border = '#c4b99a'; tc = '#5a4a30'; }
+  }
+
   if (isSel) { border = '#2563eb'; bw = 3; }
 
   return (
     <div
       onClick={() => onNodeClick?.(node)}
-      className="cursor-pointer rounded-lg px-2 py-0.5 text-center whitespace-nowrap shadow-sm select-none"
+      className="cursor-pointer rounded-lg px-3 py-1.5 text-center whitespace-nowrap shadow-sm select-none transition-all"
       style={{
         background: bg,
         border: `${bw}px solid ${border}`,
-        minWidth: 50,
+        minWidth: 60,
       }}
     >
       <div style={{
         color: tc,
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 700,
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+        lineHeight: 1.2
       }}>
         {node.name}
       </div>
       <div style={{
-        color: tc === '#fff' ? 'rgba(255,255,255,0.6)' : '#a89a7a',
-        fontSize: 9,
+        color: tc === '#fff' ? 'rgba(255,255,255,0.85)' : tc,
+        fontSize: 10,
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+        opacity: isGuess || !onSpine ? 0.8 : 1
       }}>
         {isGuess ? 'your guess' : node.rank}
       </div>
     </div>
   );
 }
-
-/* ── Line constants ────────────────────────────────────────── */
-
-// Base connector lines (subtle, thin)
-const BASE_COLOR = '#d4cbb8';
-const BASE_W = 1.5;
-
-// Spine overlay (bold, prominent gold)
-const SPINE_COLOR = '#8b6914';
-const SPINE_W = 3.5;
-
-// Spacing
-const V_GAP = 6;        // vertical connector from parent pill down to horizontal bar
-const CHILD_PAD = 10;   // padding-top on each child wrapper (horiz bar + vertical stub)
 
 /* ── Recursive tree branch ─────────────────────────────────── */
 
@@ -113,39 +123,32 @@ function Branch({
 }) {
   const ordered = reorderChildren(node, spineSet);
   const hasKids = ordered.length > 0;
-  const nodeOnSpine = spineSet.has(node.name) && node.rank !== 'guess';
 
   // Does this node have a spine child?
   const hasSpineChild = ordered.some(c => spineSet.has(c.name) && c.rank !== 'guess');
+  
+  // The color of the branches originating from this node
+  const branchColor = getDepthColor(depth + 1);
 
   return (
     <div className="flex flex-col items-center">
-      {/* The node pill */}
       <NodePill
-        node={node} depth={depth} mysteryPath={mysteryPath}
-        mysteryId={mysteryId} gameOver={gameOver}
-        selectedNodeName={selectedNodeName}
-        isNew={newNodes.includes(node.name)}
-        onNodeClick={onNodeClick}
+        node={node} depth={depth} mysteryPath={mysteryPath} mysteryId={mysteryId} 
+        gameOver={gameOver} selectedNodeName={selectedNodeName}
+        isNew={newNodes.includes(node.name)} onNodeClick={onNodeClick}
       />
 
       {hasKids && (
         <>
-          {/* Vertical line from parent pill down to the horizontal bar */}
-          <div className="relative" style={{ width: 6, height: V_GAP }}>
-            {/* Base line (always) */}
+          {/* Vertical gap drop from parent */}
+          <div className="relative" style={{ width: SPINE_W, height: V_GAP }}>
             <div className="absolute" style={{
-              left: '50%', transform: 'translateX(-0.75px)',
-              width: BASE_W, height: '100%', background: BASE_COLOR,
+              left: '50%', transform: 'translateX(-50%)',
+              width: hasSpineChild ? SPINE_W : BASE_W,
+              height: '100%',
+              background: hasSpineChild ? branchColor : getDepthColor(depth),
+              borderRadius: 2
             }} />
-            {/* Spine overlay (if this node is on spine and has a spine child below) */}
-            {nodeOnSpine && hasSpineChild && (
-              <div className="absolute" style={{
-                left: '50%', transform: `translateX(-${SPINE_W / 2}px)`,
-                width: SPINE_W, height: '100%', background: SPINE_COLOR,
-                borderRadius: 2, zIndex: 2,
-              }} />
-            )}
           </div>
 
           {/* Children row */}
@@ -155,6 +158,10 @@ function Branch({
               const isFirst = i === 0;
               const isLast = i === ordered.length - 1;
               const childOnSpine = spineSet.has(child.name) && child.rank !== 'guess';
+              const childIsGuess = child.rank === 'guess';
+
+              // Vertical drop color to this specific child
+              const childLineColor = childIsGuess ? getDepthColor(depth) : branchColor;
 
               return (
                 <div
@@ -162,54 +169,41 @@ function Branch({
                   className="relative flex flex-col items-center"
                   style={{
                     paddingTop: isOnly ? 0 : CHILD_PAD,
-                    paddingLeft: 1,
-                    paddingRight: 1,
+                    paddingLeft: 4,
+                    paddingRight: 4,
                   }}
                 >
-                  {/* Connector lines for multi-child layouts */}
                   {!isOnly && (
                     <>
-                      {/* ─── BASE LAYER (thin, subtle) ─── */}
                       {/* Left half of horizontal bar */}
                       {!isFirst && (
                         <div className="absolute left-0" style={{
-                          top: 0, right: '50%',
-                          height: BASE_W, background: BASE_COLOR,
+                          top: 0, right: '50%', height: BASE_W, background: branchColor
                         }} />
                       )}
                       {/* Right half of horizontal bar */}
                       {!isLast && (
                         <div className="absolute" style={{
-                          top: 0, left: '50%', right: 0,
-                          height: BASE_W, background: BASE_COLOR,
+                          top: 0, left: '50%', right: 0, height: BASE_W, background: branchColor
                         }} />
                       )}
-                      {/* Vertical stub from bar down to child */}
+                      {/* Vertical stub dropping to child */}
                       <div className="absolute" style={{
-                        top: 0, left: '50%', transform: 'translateX(-0.75px)',
-                        width: BASE_W, height: CHILD_PAD,
-                        background: BASE_COLOR,
+                        top: 0, left: '50%', transform: 'translateX(-50%)',
+                        width: childOnSpine ? SPINE_W : BASE_W, 
+                        height: CHILD_PAD,
+                        background: childOnSpine ? branchColor : childLineColor,
+                        borderRadius: 2, zIndex: childOnSpine ? 2 : 1
                       }} />
-
-                      {/* ─── SPINE OVERLAY (bold gold, only on vertical stub) ─── */}
-                      {childOnSpine && (
-                        <div className="absolute" style={{
-                          top: 0, left: '50%', transform: `translateX(-${SPINE_W / 2}px)`,
-                          width: SPINE_W, height: CHILD_PAD,
-                          background: SPINE_COLOR,
-                          borderRadius: 2, zIndex: 2,
-                        }} />
-                      )}
                     </>
                   )}
 
-                  {/* Recurse into child */}
                   <Branch
                     node={child} spineSet={spineSet}
                     mysteryPath={mysteryPath} mysteryId={mysteryId}
                     gameOver={gameOver} onNodeClick={onNodeClick}
                     selectedNodeName={selectedNodeName}
-                    newNodes={newNodes} depth={depth + 1}
+                    newNodes={newNodes} depth={childIsGuess ? depth : depth + 1}
                   />
                 </div>
               );
@@ -230,7 +224,7 @@ export function PhylogeneticTree({
   const spineSet = useMemo(() => new Set(mysteryPath), [mysteryPath]);
 
   return (
-    <div className="overflow-x-auto w-full py-3">
+    <div className="overflow-x-auto w-full py-6">
       <div className="inline-flex justify-center min-w-full">
         <Branch
           node={revealedTree} spineSet={spineSet}
