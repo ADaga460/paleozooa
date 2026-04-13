@@ -4,6 +4,8 @@ import { Organism, GameState } from '@/types';
 import {
   createInitialState,
   getDailyOrganismIndex,
+  pickWeightedRandom,
+  addRecentPick,
 } from '@/lib/game-logic';
 import { findLCA } from '@/lib/taxonomy';
 import { saveGameState, loadGameState } from '@/lib/storage';
@@ -40,8 +42,13 @@ export function useGame(
       if (mode === 'daily') {
         mystery = pool[getDailyOrganismIndex(pool)];
       } else {
-        mystery = pool[Math.floor(Math.random() * pool.length)];
+        // Weighted random: favors rarer dinos at higher difficulty, avoids recent picks
+        mystery = pickWeightedRandom(pool, difficulty, mode);
       }
+
+      // Track this pick so it doesn't repeat for ~10 rounds
+      addRecentPick(mode, difficulty, mystery.id);
+
       const state = createInitialState(mystery, mode, difficulty);
       setGameState(state);
       saveGameState(state);
