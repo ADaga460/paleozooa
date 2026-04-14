@@ -32,6 +32,8 @@ export function WikiImage({ slug, alt }: { slug: string; alt: string }) {
       <img
         src={data.thumbnail.source}
         alt={alt}
+        loading="lazy"
+        decoding="async"
         className="w-full h-full object-cover"
       />
       {data.content_urls?.desktop?.page && (

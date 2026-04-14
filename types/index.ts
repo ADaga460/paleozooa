@@ -45,6 +45,7 @@ export interface WikipediaResponse {
   thumbnail?: { source: string; width: number; height: number };
   originalimage?: { source: string; width: number; height: number };
   content_urls?: { desktop: { page: string } };
+  gallery?: { url: string; caption: string; score: number }[];
 }
 
 export interface Stats {

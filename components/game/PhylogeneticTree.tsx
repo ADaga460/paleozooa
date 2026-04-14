@@ -1,6 +1,6 @@
 'use client';
-import { useMemo } from 'react';
-import { hierarchy, HierarchyPointNode } from 'd3-hierarchy';
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import { hierarchy } from 'd3-hierarchy';
 import { TaxonomyNode } from '@/types';
 import { DEPTH_COLORS } from '@/lib/constants';
 
@@ -55,10 +55,16 @@ function layoutTree(root: TaxonomyNode, mysteryPath: string[]): {
   const nodes: LayoutNode[] = [];
   const links: { source: LayoutNode; target: LayoutNode }[] = [];
 
+  // Memoize leaf counts — countLeaves is called per-child in layout(),
+  // so without caching, the same subtrees get walked repeatedly.
+  const leafCache = new Map<TaxonomyNode, number>();
   function countLeaves(node: TaxonomyNode): number {
-    if (node.children.length === 0) return 1;
+    const cached = leafCache.get(node);
+    if (cached !== undefined) return cached;
+    if (node.children.length === 0) { leafCache.set(node, 1); return 1; }
     let sum = 0;
     for (const c of node.children) sum += countLeaves(c);
+    leafCache.set(node, sum);
     return sum;
   }
 
@@ -121,13 +127,57 @@ export function PhylogeneticTree({
   newNodes = [],
   gameOver,
 }: Props) {
-  const { nodes, links, width, height } = useMemo(
+  const layout = useMemo(
     () => layoutTree(revealedTree, mysteryPath),
     [revealedTree, mysteryPath]
   );
+  const { nodes, links, width, height } = layout;
+
+  // Viewport-based virtualization: only render nodes/links in view
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [viewport, setViewport] = useState({ top: 0, bottom: 9999, left: 0, right: 9999 });
+  const BUFFER = 100; // px buffer around viewport
+
+  const updateViewport = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    setViewport({
+      top: el.scrollTop - BUFFER,
+      bottom: el.scrollTop + el.clientHeight + BUFFER,
+      left: el.scrollLeft - BUFFER,
+      right: el.scrollLeft + el.clientWidth + BUFFER,
+    });
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    updateViewport();
+    el.addEventListener('scroll', updateViewport, { passive: true });
+    return () => el.removeEventListener('scroll', updateViewport);
+  }, [updateViewport]);
+
+  // If tree is small (<40 nodes), skip culling entirely
+  const shouldCull = nodes.length > 40;
+
+  function isVisible(x: number, y: number, w = 160, h = 32) {
+    if (!shouldCull) return true;
+    return y + h > viewport.top && y - h < viewport.bottom &&
+           x + w / 2 > viewport.left && x - w / 2 < viewport.right;
+  }
+
+  function isLinkVisible(sy: number, ty: number, sx: number, tx: number) {
+    if (!shouldCull) return true;
+    const minY = Math.min(sy, ty);
+    const maxY = Math.max(sy, ty);
+    const minX = Math.min(sx, tx);
+    const maxX = Math.max(sx, tx);
+    return maxY > viewport.top && minY < viewport.bottom &&
+           maxX > viewport.left && minX < viewport.right;
+  }
 
   return (
-    <div className="overflow-auto w-full">
+    <div ref={containerRef} className="overflow-auto w-full" style={{ maxHeight: '70vh' }}>
       <svg width={width} height={height} className="mx-auto block">
         <defs>
           <filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -148,11 +198,11 @@ export function PhylogeneticTree({
             const isSpineLink =
               mysteryPath.includes(link.source.data.name) &&
               mysteryPath.includes(link.target.data.name);
-            // Curved path with a natural bend
             const sx = link.source.x;
             const sy = link.source.y;
             const tx = link.target.x;
             const ty = link.target.y;
+            if (!isLinkVisible(sy, ty, sx, tx)) return null;
             const midY = (sy + ty) / 2;
             return (
               <path
@@ -166,6 +216,7 @@ export function PhylogeneticTree({
             );
           })}
           {nodes.map((node, i) => {
+            if (!isVisible(node.x, node.y)) return null;
             const d = node.data;
             const isGuess = d.rank === 'guess';
             const isMysteryLeaf = gameOver && d.organismId === mysteryId;

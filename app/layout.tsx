@@ -15,8 +15,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Paleozooa",
-  description: "Guess the daily Paleozoic animal.",
+  title: {
+    default: "Paleozooa - Daily Dinosaur Guessing Game",
+    template: "%s | Paleozooa",
+  },
+  description: "Guess the mystery dinosaur each day using taxonomy clues. A Wordle-style game for Mesozoic animals — learn paleontology while you play.",
+  keywords: ["dinosaur", "guessing game", "paleontology", "taxonomy", "wordle", "mesozoic", "evolution"],
+  openGraph: {
+    title: "Paleozooa - Daily Dinosaur Guessing Game",
+    description: "Guess the mystery dinosaur each day using taxonomy clues.",
+    type: "website",
+    siteName: "Paleozooa",
+  },
+  twitter: {
+    card: "summary",
+    title: "Paleozooa",
+    description: "Guess the mystery dinosaur each day using taxonomy clues.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

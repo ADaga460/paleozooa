@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Organism } from '@/types';
 import organismsData from '@/data/organisms.json';
 import { LearnCard } from '@/components/learn/LearnCard';
+import { EvolutionTimeline } from '@/components/learn/EvolutionTimeline';
 
 const allOrganisms = organismsData as Organism[];
 
@@ -112,9 +113,71 @@ function buildGroups(): CladeGroup[] {
   return groups.filter(g => g.organisms.length > 0);
 }
 
+const STORAGE_KEY = 'paleozooa-learn-state';
+
 export default function LearnPage() {
   const groups = buildGroups();
-  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Restore open group from sessionStorage
+  const [openGroup, setOpenGroup] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.openGroup ?? null;
+      }
+    } catch {}
+    return null;
+  });
+
+  // Save open group to sessionStorage on change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ openGroup }));
+    } catch {}
+  }, [openGroup]);
+
+  // Restore scroll position after hydration
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.scrollY === 'number') {
+          // Wait for the DOM to settle (group contents render)
+          requestAnimationFrame(() => {
+            window.scrollTo(0, parsed.scrollY);
+          });
+        }
+      }
+    } catch {}
+  }, []);
+
+  // Save scroll position before navigating away
+  useEffect(() => {
+    function saveScroll() {
+      try {
+        const existing = sessionStorage.getItem(STORAGE_KEY);
+        const parsed = existing ? JSON.parse(existing) : {};
+        parsed.scrollY = window.scrollY;
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      } catch {}
+    }
+    // Save on beforeunload (for full navigations) and on click (for client-side nav)
+    window.addEventListener('beforeunload', saveScroll);
+    // For Next.js client-side nav, listen to clicks on links
+    function handleClick(e: MouseEvent) {
+      const target = (e.target as HTMLElement).closest('a');
+      if (target && target.href) saveScroll();
+    }
+    document.addEventListener('click', handleClick, true);
+    return () => {
+      window.removeEventListener('beforeunload', saveScroll);
+      document.removeEventListener('click', handleClick, true);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#f5f0e8] text-stone-900">
@@ -134,6 +197,11 @@ export default function LearnPage() {
       </header>
 
       <main className="max-w-5xl mx-auto p-4 md:p-6">
+        {/* Evolution Timeline */}
+        {/*<div className="mb-6">
+          <EvolutionTimeline organisms={allOrganisms} />
+        </div>
+        */}
 
         <div className="space-y-3">
           {groups.map(group => {

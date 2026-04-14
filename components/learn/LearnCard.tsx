@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Organism } from '@/types';
 import { useWikipedia } from '@/hooks/useWikipedia';
 
@@ -19,7 +20,7 @@ export function LearnCard({ organism }: { organism: Organism }) {
   const periodColor = PERIOD_COLORS[organism.timePeriod] ?? '#6b5c3e';
 
   return (
-    <div className="border border-[#d4cbb8] rounded-lg bg-white overflow-hidden flex flex-col">
+    <Link href={`/learn/${organism.id}`} className="border border-[#d4cbb8] rounded-lg bg-white overflow-hidden flex flex-col hover:shadow-md transition-shadow">
       {/* Image area */}
       <div className="bg-[#f0ebe1] flex items-center justify-center h-40">
         {loading && (
@@ -29,6 +30,8 @@ export function LearnCard({ organism }: { organism: Organism }) {
           <img
             src={data.thumbnail.source}
             alt={organism.commonName}
+            loading="lazy"
+            decoding="async"
             className="max-h-40 w-full object-contain"
           />
         ) : !loading ? (
@@ -73,6 +76,6 @@ export function LearnCard({ organism }: { organism: Organism }) {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
