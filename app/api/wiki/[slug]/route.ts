@@ -5,6 +5,52 @@ const TTL = 24 * 60 * 60 * 1000;
 
 const USER_AGENT = 'Paleozooa/1.0 (https://github.com/paleozooa/paleozooa; contact@example.com)';
 
+// --- Rate Limiter ---
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 30;
+const rateLimitMap = new Map<string, number[]>();
+
+// Periodically clean up stale entries every 5 minutes
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, timestamps] of rateLimitMap) {
+    const filtered = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+    if (filtered.length === 0) {
+      rateLimitMap.delete(ip);
+    } else {
+      rateLimitMap.set(ip, filtered);
+    }
+  }
+}, CLEANUP_INTERVAL_MS);
+
+function getClientIp(req: Request): string {
+  const headers = new Headers(req.headers);
+  const forwarded = headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return headers.get('x-real-ip') ?? 'unknown';
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfterSeconds: number } {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(ip) ?? [];
+  // Remove timestamps outside the current window
+  const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+
+  if (recent.length >= RATE_LIMIT_MAX_REQUESTS) {
+    // Calculate when the oldest request in the window will expire
+    const oldestInWindow = recent[0];
+    const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - oldestInWindow);
+    return { allowed: false, retryAfterSeconds: Math.ceil(retryAfterMs / 1000) };
+  }
+
+  recent.push(now);
+  rateLimitMap.set(ip, recent);
+  return { allowed: true, retryAfterSeconds: 0 };
+}
+
 /**
  * Pick the best image from Wikipedia's media-list endpoint.
  * Priority: life reconstruction > skeletal/restoration > default thumbnail.
@@ -76,6 +122,19 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  // Rate limit check
+  const clientIp = getClientIp(_req);
+  const { allowed, retryAfterSeconds } = checkRateLimit(clientIp);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfterSeconds) },
+      }
+    );
+  }
+
   const { slug } = await params;
   const cached = cache.get(slug);
   if (cached && Date.now() - cached.ts < TTL) {

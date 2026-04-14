@@ -9,6 +9,7 @@ import {
 } from '@/lib/game-logic';
 import { findLCA } from '@/lib/taxonomy';
 import { saveGameState, loadGameState } from '@/lib/storage';
+import { trackGameStart, trackGuess, trackGameComplete, trackHintUsed } from '@/lib/analytics';
 import organismsData from '@/data/organisms.json';
 
 const allOrganisms = organismsData as Organism[];
@@ -53,6 +54,7 @@ export function useGame(
       setGameState(state);
       saveGameState(state);
       initedFor.current = stateKey;
+      trackGameStart(mode, difficulty);
     },
     [mode, difficulty, pool]
   );
@@ -72,6 +74,9 @@ export function useGame(
       const newGuessesUsed = prev.guessesUsed + 1;
       const isComplete = isWon || newGuessesUsed >= prev.maxGuesses;
 
+      const lca = findLCA(guess.taxonomyPath, prev.mysteryOrganism.taxonomyPath);
+      trackGuess(prev.mode, prev.difficulty, newGuessesUsed, guess.id, lca.sharedDepth);
+
       const newState: GameState = {
         ...prev,
         guesses: [...prev.guesses, guess],
@@ -81,6 +86,11 @@ export function useGame(
         guessesUsed: newGuessesUsed,
       };
       saveGameState(newState);
+
+      if (isComplete) {
+        trackGameComplete(prev.mode, prev.difficulty, isWon, newGuessesUsed, prev.mysteryOrganism.id);
+      }
+
       return newState;
     });
   }, []);
@@ -93,6 +103,8 @@ export function useGame(
 
       const newGuessesUsed = prev.guessesUsed + 1;
       const isComplete = newGuessesUsed >= prev.maxGuesses;
+
+      trackHintUsed('period', prev.mode, prev.difficulty);
 
       const newState: GameState = {
         ...prev,
@@ -125,6 +137,8 @@ export function useGame(
 
       const newGuessesUsed = prev.guessesUsed + 4;
       const isComplete = newGuessesUsed >= prev.maxGuesses;
+
+      trackHintUsed('tree', prev.mode, prev.difficulty);
 
       const newState: GameState = {
         ...prev,

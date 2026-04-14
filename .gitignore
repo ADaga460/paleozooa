@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+dev-dashboard.py
 
 # next.js
 /.next/

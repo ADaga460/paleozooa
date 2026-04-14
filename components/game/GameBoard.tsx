@@ -10,6 +10,7 @@ import { HowToPlayModal } from '@/components/ui/HowToPlayModal';
 import { Header } from '@/components/ui/Header';
 import { buildGameTree, collectNodeNames, findBestLCA, findLCA } from '@/lib/taxonomy';
 import { TaxonomyNode, Organism } from '@/types';
+import EraTimeline from './EraTimeline';
 import organismsData from '@/data/organisms.json';
 
 const allOrganisms = organismsData as Organism[];
@@ -343,6 +344,16 @@ export function GameBoard() {
                 rank={cardInfo.rank}
                 subtitle={cardInfo.subtitle}
                 headline={cardInfo.headline}
+              />
+            )}
+
+            {/* Era Timeline */}
+            {gameState.guesses.length > 0 && (
+              <EraTimeline
+                guesses={gameState.guesses}
+                mysteryOrganism={gameState.mysteryOrganism}
+                periodRevealed={gameState.periodRevealed}
+                isComplete={gameState.isComplete}
               />
             )}
 
