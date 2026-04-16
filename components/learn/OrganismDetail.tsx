@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { Organism } from '@/types';
 import { useWikipedia } from '@/hooks/useWikipedia';
 import { PERIOD_COLORS } from '@/lib/constants';
+import { trackLearnView } from '@/lib/analytics';
 import organismsData from '@/data/organisms.json';
 
 const allOrganisms = organismsData as Organism[];
@@ -63,6 +65,7 @@ const DIFFICULTY_LABELS: Record<number, { label: string; color: string }> = {
 };
 
 export function OrganismDetail({ organism }: { organism: Organism }) {
+  useEffect(() => { trackLearnView(organism.id); }, [organism.id]);
   const { data, loading } = useWikipedia(organism.wikipediaSlug);
   const periodColor = PERIOD_COLORS[organism.timePeriod] ?? '#6b5c3e';
   const related = getRelated(organism);

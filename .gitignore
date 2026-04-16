@@ -33,8 +33,17 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.local
+.env.production
+.env.development
+!.env.example
+
+# collector runtime db files
+collector/*.db
+collector/*.db-shm
+collector/*.db-wal
 
 # vercel
 .vercel

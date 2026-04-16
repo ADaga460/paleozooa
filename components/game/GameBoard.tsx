@@ -11,6 +11,7 @@ import { Header } from '@/components/ui/Header';
 import { buildGameTree, collectNodeNames, findBestLCA, findLCA } from '@/lib/taxonomy';
 import { TaxonomyNode, Organism } from '@/types';
 import EraTimeline from './EraTimeline';
+import { trackShare, trackDifficultyChange, trackModeChange, trackTreeNodeClick, trackPageView } from '@/lib/analytics';
 import organismsData from '@/data/organisms.json';
 
 const allOrganisms = organismsData as Organism[];
@@ -67,6 +68,10 @@ export function GameBoard() {
   const pool = useMemo(() => filterByDifficulty(allOrganisms, difficulty), [difficulty]);
   const { gameState, makeGuess, usePeriodHint, useTreeHint, startNewGame } = useGame(mode, difficulty, pool);
   const { stats, recordResult } = useStats();
+
+  useEffect(() => {
+    trackPageView('/');
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -197,6 +202,7 @@ export function GameBoard() {
     gameState.guessesUsed + 1 > gameState.maxGuesses;
 
   const handleNodeClick = (node: TaxonomyNode) => {
+    trackTreeNodeClick(node.name, node.rank);
     setSelectedInfo({
       name: node.name,
       rank: node.rank,
@@ -243,6 +249,7 @@ export function GameBoard() {
                     key={d}
                     onClick={() => {
                       if (d !== difficulty) {
+                        trackDifficultyChange(difficulty, d);
                         setDifficulty(d);
                       }
                     }}
@@ -306,6 +313,7 @@ export function GameBoard() {
                     onClick={() => {
                       const text = `Paleozooa ${gameState.mode} (${gameState.difficulty}) - ${gameState.isWon ? `${gameState.guessesUsed}/${gameState.maxGuesses}` : 'X/20'}`;
                       navigator.clipboard?.writeText(text);
+                      trackShare(gameState.mode, gameState.difficulty, gameState.isWon, gameState.guessesUsed);
                     }}
                     className="bg-[#e8e0d0] border border-[#c4b99a] text-[#6b5c3e] rounded-lg px-4 py-1.5 text-sm hover:bg-[#ded6c4] transition-colors flex items-center gap-1.5"
                   >

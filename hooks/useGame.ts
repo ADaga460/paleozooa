@@ -54,7 +54,7 @@ export function useGame(
       setGameState(state);
       saveGameState(state);
       initedFor.current = stateKey;
-      trackGameStart(mode, difficulty);
+      trackGameStart(mode, difficulty, mystery.id);
     },
     [mode, difficulty, pool]
   );
@@ -75,7 +75,7 @@ export function useGame(
       const isComplete = isWon || newGuessesUsed >= prev.maxGuesses;
 
       const lca = findLCA(guess.taxonomyPath, prev.mysteryOrganism.taxonomyPath);
-      trackGuess(prev.mode, prev.difficulty, newGuessesUsed, guess.id, lca.sharedDepth);
+      trackGuess(prev.mode, prev.difficulty, newGuessesUsed, guess.id, lca.sharedDepth, prev.mysteryOrganism.id);
 
       const newState: GameState = {
         ...prev,
