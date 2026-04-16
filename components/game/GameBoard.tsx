@@ -78,7 +78,7 @@ export function GameBoard() {
 
   // Update document title with daily animal number
   useEffect(() => {
-    if (mode === 'daily') {
+    if (mode === 'daily') { 
       document.title = `Animal #${dailyNumber} | Paleozooa`;
     } else {
       document.title = 'Practice | Paleozooa';
