@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { GameBoard } from '@/components/game/GameBoard';
+import { getDailyNumber } from '@/lib/game-logic';
 
+const dailyNumber = getDailyNumber();
 export const metadata: Metadata = {
-  title: 'Paleozooa - Daily Dinosaur Guessing Game',
+  title: `Animal #${dailyNumber}`,
   description:
     'Guess the mystery dinosaur each day by exploring a phylogenetic tree. A Wordle-style daily puzzle for Mesozoic animals.',
   alternates: {
