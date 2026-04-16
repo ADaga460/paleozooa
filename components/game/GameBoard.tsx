@@ -9,6 +9,7 @@ import { StatsModal } from '@/components/ui/StatsModal';
 import { HowToPlayModal } from '@/components/ui/HowToPlayModal';
 import { Header } from '@/components/ui/Header';
 import { buildGameTree, collectNodeNames, findBestLCA, findLCA } from '@/lib/taxonomy';
+import { getDailyNumber } from '@/lib/game-logic';
 import { TaxonomyNode, Organism } from '@/types';
 import EraTimeline from './EraTimeline';
 import { trackShare, trackDifficultyChange, trackModeChange, trackTreeNodeClick, trackPageView } from '@/lib/analytics';
@@ -60,10 +61,12 @@ export function GameBoard() {
   const [selectedInfo, setSelectedInfo] = useState<SelectedInfo | null>(null);
   const [showTable, setShowTable] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
+  const [shareCopied, setShareCopied] = useState(false);
   const prevNodeNamesRef = useRef<string[]>([]);
   const recordedCompleteRef = useRef<string>('');
   const prevGuessCount = useRef(0);
   const countdown = useCountdown();
+  const dailyNumber = getDailyNumber();
 
   const pool = useMemo(() => filterByDifficulty(allOrganisms, difficulty), [difficulty]);
   const { gameState, makeGuess, usePeriodHint, useTreeHint, startNewGame } = useGame(mode, difficulty, pool);
@@ -72,6 +75,16 @@ export function GameBoard() {
   useEffect(() => {
     trackPageView('/');
   }, []);
+
+  // Update document title with daily animal number
+  useEffect(() => {
+    if (mode === 'daily') {
+      document.title = `Animal #${dailyNumber} | Paleozooa`;
+    } else {
+      document.title = 'Practice | Paleozooa';
+    }
+    return () => { document.title = 'Paleozooa'; };
+  }, [mode, dailyNumber]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -239,8 +252,8 @@ export function GameBoard() {
           {/* LEFT COLUMN */}
           <aside className="lg:w-[400px] lg:flex-shrink-0 flex flex-col gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-stone-800 capitalize font-serif">
-                {mode}
+              <h2 className="text-2xl font-bold text-stone-800 font-serif">
+                {mode === 'daily' ? `Animal #${dailyNumber}` : 'Practice'}
               </h2>
               <p className="text-sm text-stone-600 mt-1">{statusLine}</p>
               <div className="flex gap-1 mt-2">
@@ -311,13 +324,55 @@ export function GameBoard() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
-                      const text = `Paleozooa ${gameState.mode} (${gameState.difficulty}) - ${gameState.isWon ? `${gameState.guessesUsed}/${gameState.maxGuesses}` : 'X/20'}`;
+                      if (shareCopied) return;
+                      const mystery = gameState.mysteryOrganism;
+                      const maxDepth = mystery.taxonomyPath.length - 1;
+
+                      // Build depth squares for each guess
+                      const squares = gameState.guesses.map(g => {
+                        if (g.id === mystery.id) return '\u2b1c'; // white = correct
+                        const lca = findLCA(g.taxonomyPath, mystery.taxonomyPath);
+                        const ratio = lca.sharedDepth / maxDepth;
+                        if (ratio >= 0.7) return '\ud83d\udfe9'; // green
+                        if (ratio >= 0.4) return '\ud83d\udfe8'; // yellow
+                        return '\ud83d\udfe5'; // red
+                      }).join('');
+
+                      // Average guesses from stats
+                      const totalGuesses = Object.entries(stats.guessDistribution)
+                        .reduce((sum, [g, count]) => sum + Number(g) * count, 0);
+                      const avgGuesses = stats.gamesWon > 0
+                        ? (totalGuesses / stats.gamesWon).toFixed(1)
+                        : '-';
+
+                      const label = mode === 'daily' ? `Animal #${dailyNumber}` : 'Practice';
+                      const result = gameState.isWon
+                        ? `I figured it out in ${gameState.guessesUsed} guesses!`
+                        : `I couldn't get it in ${gameState.maxGuesses} guesses.`;
+
+                      const text = [
+                        `Paleozooa ${label}`,
+                        result,
+                        squares,
+                        `\ud83d\udd25 ${stats.currentStreak} | Avg. Guesses: ${avgGuesses}`,
+                        '',
+                        'https://paleozooa.dev',
+                        '#paleozooa',
+                      ].join('\n');
+
                       navigator.clipboard?.writeText(text);
                       trackShare(gameState.mode, gameState.difficulty, gameState.isWon, gameState.guessesUsed);
+                      setShareCopied(true);
+                      setTimeout(() => setShareCopied(false), 2500);
                     }}
-                    className="bg-[#e8e0d0] border border-[#c4b99a] text-[#6b5c3e] rounded-lg px-4 py-1.5 text-sm hover:bg-[#ded6c4] transition-colors flex items-center gap-1.5"
+                    disabled={shareCopied}
+                    className={`rounded-lg px-4 py-1.5 text-sm transition-colors flex items-center gap-1.5 ${
+                      shareCopied
+                        ? 'bg-[#d4cbb8] border border-[#c4b99a] text-stone-400 cursor-default'
+                        : 'bg-[#e8e0d0] border border-[#c4b99a] text-[#6b5c3e] hover:bg-[#ded6c4]'
+                    }`}
                   >
-                    Share &#x2197;
+                    {shareCopied ? 'Copied!' : 'Share \u2197'}
                   </button>
                   <button
                     onClick={() => {

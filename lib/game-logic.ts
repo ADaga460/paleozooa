@@ -1,11 +1,15 @@
 import { Organism, GameState, LCAResult } from '@/types';
 import { findLCA } from './taxonomy';
 
-export function getDailyOrganismIndex(organisms: Organism[]): number {
+export function getDailyNumber(): number {
   const epoch = new Date('2025-01-01').getTime();
   const now = new Date();
   now.setHours(0, 0, 0, 0);
-  const daysSinceEpoch = Math.floor((now.getTime() - epoch) / 86400000);
+  return Math.floor((now.getTime() - epoch) / 86400000);
+}
+
+export function getDailyOrganismIndex(organisms: Organism[]): number {
+  const daysSinceEpoch = getDailyNumber();
   const hash = (daysSinceEpoch * 2654435761) >>> 0;
   return hash % organisms.length;
 }
