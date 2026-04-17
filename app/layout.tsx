@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://paleozooa.dev"
+  ),
   title: {
     default: "Paleozooa - Daily Dinosaur Guessing Game",
     template: "%s | Paleozooa",
