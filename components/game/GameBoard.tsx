@@ -248,9 +248,9 @@ export function GameBoard() {
       />
 
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* LEFT COLUMN */}
-          <aside className="lg:w-[400px] lg:flex-shrink-0 flex flex-col gap-4">
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[400px_minmax(0,1fr)] lg:gap-6">
+          {/* CONTROLS — mobile: first, desktop: top-left */}
+          <aside className="order-1 flex flex-col gap-4 lg:col-start-1 lg:row-start-1">
             <div>
               <h2 className="text-2xl font-bold text-stone-800 font-serif">
                 {mode === 'daily' ? `Animal #${dailyNumber}` : 'Practice'}
@@ -399,7 +399,10 @@ export function GameBoard() {
                 <span className="text-stone-800 font-semibold">{stats.currentStreak}</span>
               </span>
             </div>
+          </aside>
 
+          {/* INFO PANEL — mobile: below tree, desktop: left column under controls */}
+          <aside className="order-3 flex flex-col gap-4 lg:col-start-1 lg:row-start-2">
             {cardInfo && (
               <TaxonCard
                 key={cardInfo.taxonName}
@@ -445,8 +448,8 @@ export function GameBoard() {
             )}
           </aside>
 
-          {/* RIGHT COLUMN: TREE */}
-          <section className="flex-1 min-h-[400px]">
+          {/* TREE — mobile: between controls and info, desktop: right column spans both rows */}
+          <section className="order-2 min-w-0 min-h-[400px] lg:col-start-2 lg:row-start-1 lg:row-span-2">
             <PhylogeneticTree
               revealedTree={revealedTree}
               mysteryPath={gameState.mysteryOrganism.taxonomyPath}

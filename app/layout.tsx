@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: "Paleozooa",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Paleozooa",
     description: "Guess the mystery dinosaur each day using taxonomy clues.",
   },
@@ -36,6 +36,12 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

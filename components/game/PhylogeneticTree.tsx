@@ -33,7 +33,11 @@ interface LayoutNode {
   parent: LayoutNode | null;
 }
 
-function layoutTree(root: TaxonomyNode, mysteryPath: string[]): {
+function layoutTree(
+  root: TaxonomyNode,
+  mysteryPath: string[],
+  containerWidth: number,
+): {
   nodes: LayoutNode[];
   links: { source: LayoutNode; target: LayoutNode }[];
   width: number;
@@ -45,10 +49,17 @@ function layoutTree(root: TaxonomyNode, mysteryPath: string[]): {
 
   const ROW_HEIGHT = 110;       // vertical spacing between layers
   const STAGGER = 28;           // y offset for alternating siblings
-  const MIN_NODE_WIDTH = 160;   // horizontal spacing per leaf
+  const MIN_NODE_WIDTH = 160;   // preferred horizontal spacing per leaf
 
   const leafCount = Math.max(1, h.leaves().length);
-  const totalWidth = Math.max(500, leafCount * MIN_NODE_WIDTH);
+  const naturalWidth = leafCount * MIN_NODE_WIDTH;
+  // Always fit the container: compress the tree horizontally so it never
+  // causes horizontal scroll. Nodes keep their rendered size and may overlap
+  // siblings / sit on top of branch lines when space is tight — that's
+  // preferred over forcing scroll on both mobile and desktop.
+  const totalWidth = containerWidth > 0
+    ? Math.min(containerWidth, naturalWidth)
+    : naturalWidth;
   const totalHeight = Math.max(300, (h.height + 1) * ROW_HEIGHT + STAGGER * 2 + 60);
 
   // First pass: assign x ranges to each subtree based on leaf count
@@ -127,14 +138,29 @@ export function PhylogeneticTree({
   newNodes = [],
   gameOver,
 }: Props) {
+  // Track container width so mobile viewports get a tighter layout
+  // (smaller per-leaf spacing, no 500px floor) and the SVG can fit without
+  // forcing a horizontal scroll when the tree is small.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => setContainerWidth(el.clientWidth);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const layout = useMemo(
-    () => layoutTree(revealedTree, mysteryPath),
-    [revealedTree, mysteryPath]
+    () => layoutTree(revealedTree, mysteryPath, containerWidth),
+    [revealedTree, mysteryPath, containerWidth]
   );
   const { nodes, links, width, height } = layout;
 
   // Viewport-based virtualization: only render nodes/links in view
-  const containerRef = useRef<HTMLDivElement>(null);
   const [viewport, setViewport] = useState({ top: 0, bottom: 9999, left: 0, right: 9999 });
   const BUFFER = 100; // px buffer around viewport
 
@@ -177,7 +203,7 @@ export function PhylogeneticTree({
   }
 
   return (
-    <div ref={containerRef} className="overflow-auto w-full" style={{ maxHeight: '70vh' }}>
+    <div ref={containerRef} className="overflow-y-auto overflow-x-hidden w-full" style={{ maxHeight: '70vh' }}>
       <svg width={width} height={height} className="mx-auto block">
         <defs>
           <filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="140%">
