@@ -1,9 +1,67 @@
 import { NextResponse } from 'next/server';
 
+// Bounded LRU-ish cache: delete-then-set reorders entries so iteration order
+// gives us insertion recency. Caps total entries to prevent an attacker from
+// driving memory up by requesting many unique slugs. Null responses are not
+// cached so a 404 doesn't pin a useless entry.
+const CACHE_MAX = 200;
 const cache = new Map<string, { data: unknown; ts: number }>();
 const TTL = 24 * 60 * 60 * 1000;
 
+function cacheGet(key: string): unknown | null {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts >= TTL) {
+    cache.delete(key);
+    return null;
+  }
+  // Refresh recency.
+  cache.delete(key);
+  cache.set(key, entry);
+  return entry.data;
+}
+
+function cacheSet(key: string, data: unknown) {
+  if (data == null) return; // Don't cache negative responses.
+  cache.delete(key);
+  cache.set(key, { data, ts: Date.now() });
+  while (cache.size > CACHE_MAX) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
+
 const USER_AGENT = 'Paleozooa/1.0 (https://github.com/paleozooa/paleozooa; contact@example.com)';
+
+// Hostnames that count as "our own site". Exact hostname equality — no
+// substring matching, which previously allowed `paleozooa.vercel.app.evil.com`
+// to masquerade as same-origin and skip the rate limit.
+const TRUSTED_HOSTS = new Set<string>([
+  'localhost',
+  '127.0.0.1',
+  'paleozooa.vercel.app',
+  'paleozooa.dev',
+  'www.paleozooa.dev',
+]);
+
+function hostFromHeader(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    return new URL(value).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+function isTrustedOrigin(req: Request): boolean {
+  const refHost = hostFromHeader(req.headers.get('referer'));
+  const origHost = hostFromHeader(req.headers.get('origin'));
+  return (
+    (refHost !== null && TRUSTED_HOSTS.has(refHost)) ||
+    (origHost !== null && TRUSTED_HOSTS.has(origHost))
+  );
+}
 
 // --- Rate Limiter ---
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
@@ -25,12 +83,16 @@ setInterval(() => {
 }, CLEANUP_INTERVAL_MS);
 
 function getClientIp(req: Request): string {
-  const headers = new Headers(req.headers);
-  const forwarded = headers.get('x-forwarded-for');
+  // On Vercel, the platform rewrites X-Forwarded-For so the leftmost entry
+  // is the original client. If you deploy elsewhere with a different proxy
+  // topology (e.g. behind Cloudflare + your own LB), adjust this to trust the
+  // rightmost hop you control instead.
+  const forwarded = req.headers.get('x-forwarded-for');
   if (forwarded) {
-    return forwarded.split(',')[0].trim();
+    const first = forwarded.split(',')[0].trim();
+    if (first) return first;
   }
-  return headers.get('x-real-ip') ?? 'unknown';
+  return req.headers.get('x-real-ip') ?? 'unknown';
 }
 
 function checkRateLimit(ip: string): { allowed: boolean; retryAfterSeconds: number } {
@@ -126,18 +188,11 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  // Rate limit check — skip for same-origin requests (our own pages fetching images)
-  const referer = _req.headers.get('referer') ?? '';
-  const origin = _req.headers.get('origin') ?? '';
-  const isSameOrigin =
-    referer.includes('localhost') ||
-    referer.includes('127.0.0.1') ||
-    origin.includes('localhost') ||
-    origin.includes('127.0.0.1') ||
-    referer.includes('paleozooa.vercel.app') ||
-    origin.includes('paleozooa.vercel.app');
-
-  if (!isSameOrigin) {
+  // Rate limit check — skip only for requests whose Referer/Origin header
+  // parses to a hostname in our trusted set. Previously this used `String.includes`,
+  // which matched `paleozooa.vercel.app.evil.com` as same-origin and let
+  // attackers bypass the rate limit entirely.
+  if (!isTrustedOrigin(_req)) {
     const clientIp = getClientIp(_req);
     const { allowed, retryAfterSeconds } = checkRateLimit(clientIp);
     if (!allowed) {
@@ -152,9 +207,14 @@ export async function GET(
   }
 
   const { slug } = await params;
-  const cached = cache.get(slug);
-  if (cached && Date.now() - cached.ts < TTL) {
-    return NextResponse.json(cached.data);
+  // Slug sanity cap — the route already only accepts a single path segment,
+  // but belt-and-braces guard against extremely long values being cached.
+  if (!slug || slug.length > 200) {
+    return NextResponse.json({ error: 'invalid slug' }, { status: 400 });
+  }
+  const cached = cacheGet(slug);
+  if (cached !== null) {
+    return NextResponse.json(cached);
   }
   try {
     // Fetch summary and images in parallel
@@ -181,7 +241,7 @@ export async function GET(
     // Include gallery for detail pages
     data.gallery = images.gallery;
 
-    cache.set(slug, { data, ts: Date.now() });
+    cacheSet(slug, data);
     return NextResponse.json(data, {
       headers: { 'Cache-Control': 'public, max-age=86400' },
     });

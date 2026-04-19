@@ -1,5 +1,25 @@
 import { NextResponse } from 'next/server';
 
+// Dev-only endpoint. In production either disable entirely or require a
+// bearer token, so aggregated stats + the unauthenticated POST ingest aren't
+// exposed on the public site.
+const IS_PROD = process.env.NODE_ENV === 'production';
+const DEV_STATS_TOKEN = process.env.DEV_STATS_TOKEN ?? '';
+
+function authorized(req: Request): boolean {
+  if (!IS_PROD) return true;
+  if (!DEV_STATS_TOKEN) return false; // fail closed in prod without token
+  const header = req.headers.get('authorization') ?? '';
+  const expected = `Bearer ${DEV_STATS_TOKEN}`;
+  // Constant-time compare to avoid timing leaks on the token.
+  if (header.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < header.length; i++) {
+    diff |= header.charCodeAt(i) ^ expected.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 interface EventRecord {
   event: string;
   data: Record<string, unknown>;
@@ -116,12 +136,23 @@ function computeResponse(stats: AggregatedStats) {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!authorized(request)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
   const stats = aggregate();
   return NextResponse.json(computeResponse(stats));
 }
 
 export async function POST(request: Request) {
+  if (!authorized(request)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+  // Reject oversized bodies before parsing.
+  const lenHeader = request.headers.get('content-length');
+  if (lenHeader && Number(lenHeader) > 16 * 1024) {
+    return NextResponse.json({ error: 'payload too large' }, { status: 413 });
+  }
   try {
     const body = await request.json();
     const { event, data } = body;

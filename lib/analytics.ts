@@ -3,6 +3,11 @@
 import { track } from '@vercel/analytics';
 
 const COLLECTOR_URL = process.env.NEXT_PUBLIC_COLLECTOR_URL || '';
+// Note: this is shipped to the browser, so it isn't a secret in the
+// cryptographic sense — set the same value as the collector's COLLECTOR_KEY.
+// It raises the bar for casual abuse; real protection comes from the
+// collector's per-IP rate limit + body-size cap + schema validation.
+const COLLECTOR_KEY = process.env.NEXT_PUBLIC_COLLECTOR_KEY || '';
 
 // Session ID — unique per browser tab
 let sessionId: string | null = null;
@@ -51,9 +56,11 @@ export function trackEvent(
   // POST to external collector (persistent, on Render)
   if (COLLECTOR_URL) {
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (COLLECTOR_KEY) headers['X-Collector-Key'] = COLLECTOR_KEY;
       fetch(`${COLLECTOR_URL}/api/ingest`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(payload),
       }).catch(() => {});
     } catch {}
