@@ -44,14 +44,18 @@ export function trackEvent(
     track(name, properties);
   } catch {}
 
-  // POST to in-app dev-stats route (in-memory, for quick local debugging)
-  try {
-    fetch('/api/dev-stats', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }).catch(() => {});
-  } catch {}
+  // POST to in-app dev-stats route (in-memory, for quick local debugging).
+  // Skipped in production: the route fails-closed without DEV_STATS_TOKEN,
+  // and the external collector below already handles real production analytics.
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      fetch('/api/dev-stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+    } catch {}
+  }
 
   // POST to external collector (persistent, on Render)
   if (COLLECTOR_URL) {
