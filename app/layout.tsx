@@ -31,7 +31,11 @@ export const metadata: Metadata = {
     siteName: "Paleozooa",
   },
   twitter: {
-    card: "summary_large_image",
+    // "summary" produces the compact embed (small square thumbnail on the
+    // right), matching the Metazooa share style. Discord, Reddit, and
+    // iMessage all follow this hint. Use "summary_large_image" if you want
+    // the wide banner-card layout instead — it requires a 1200x630 image.
+    card: "summary",
     title: "Paleozooa",
     description: "Guess the mystery dinosaur each day using taxonomy clues.",
   },

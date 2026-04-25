@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Header({
   mode,
@@ -14,7 +15,18 @@ export function Header({
 }) {
   return (
     <header className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-[#d4cbb8] bg-[#ede7db]">
-      <div>
+      <div className="flex items-center gap-2">
+        {/* Logo size matches the wordmark optical height. Width is auto-derived
+            from the image's intrinsic aspect ratio so a non-square crop won't
+            stretch. priority=true because this is above-the-fold on every page. */}
+        <Image
+          src="/logo.png"
+          alt="Paleozooa"
+          width={32}
+          height={32}
+          priority
+          className="h-8 w-8 object-contain"
+        />
         <h1 className="text-lg font-bold text-stone-800 tracking-wider font-serif">
           PALEOZOOA
         </h1>
