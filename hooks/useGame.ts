@@ -95,11 +95,14 @@ export function useGame(
     });
   }, []);
 
-  // Period hint: reveals the time period, costs 1 guess
+  // Period hint: reveals the time period, costs 1 guess.
+  // Require at least 1 guess to remain after spending — otherwise the hint
+  // itself would push guessesUsed to maxGuesses, mark the game complete, and
+  // reveal the answer leaf in buildGameTree (defeating the point of the hint).
   const usePeriodHint = useCallback(() => {
     setGameState(prev => {
       if (!prev || prev.isComplete || prev.periodRevealed) return prev;
-      if (prev.guessesUsed + 1 > prev.maxGuesses) return prev;
+      if (prev.guessesUsed + 1 >= prev.maxGuesses) return prev;
 
       const newGuessesUsed = prev.guessesUsed + 1;
       const isComplete = newGuessesUsed >= prev.maxGuesses;
@@ -117,14 +120,19 @@ export function useGame(
     });
   }, []);
 
-  // Tree hint: reveals next clade on the spine, costs 4 guesses
+  // Tree hint: reveals next clade on the spine, costs 4 guesses.
+  // Require at least 1 guess to remain after spending — see usePeriodHint
+  // comment. Without this, the hint at usedGuesses=16 (with maxGuesses=20)
+  // pushes us to 20, isComplete flips true, and buildGameTree reveals the
+  // mystery's leaf node — the user sees "the entire chain to the answer"
+  // and reasonably reports it as a hint bug.
   const useTreeHint = useCallback(() => {
     setGameState(prev => {
       if (!prev || prev.isComplete) return prev;
-      if (prev.guessesUsed + 4 > prev.maxGuesses) return prev;
+      if (prev.guessesUsed + 4 >= prev.maxGuesses) return prev;
 
       // Find current deepest revealed depth (from guesses + existing hints)
-      let currentDepth = prev.hintDepth;
+      let currentDepth = prev.hintedDepths.length > 0 ? Math.max(...prev.hintedDepths) : 0;
       for (const guess of prev.guesses) {
         if (guess.id === prev.mysteryOrganism.id) continue;
         const lca = findLCA(guess.taxonomyPath, prev.mysteryOrganism.taxonomyPath);
@@ -142,7 +150,9 @@ export function useGame(
 
       const newState: GameState = {
         ...prev,
-        hintDepth: newHintDepth,
+        // Append the specific depth this hint reveals. We never lose earlier
+        // hinted depths even when a later guess's LCA goes deeper.
+        hintedDepths: [...prev.hintedDepths, newHintDepth],
         guessesUsed: newGuessesUsed,
         isComplete,
       };

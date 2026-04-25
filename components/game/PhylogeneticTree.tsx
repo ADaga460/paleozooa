@@ -160,27 +160,34 @@ export function PhylogeneticTree({
   );
   const { nodes, links, width, height } = layout;
 
-  // Viewport-based virtualization: only render nodes/links in view
-  const [viewport, setViewport] = useState({ top: 0, bottom: 9999, left: 0, right: 9999 });
-  const BUFFER = 100; // px buffer around viewport
+  // Viewport-based virtualization: the tree now lives in document flow with
+  // no inner scroll container, so we track the WINDOW's scroll position
+  // relative to the SVG and cull nodes outside the visible page region.
+  const [viewport, setViewport] = useState({ top: -Infinity, bottom: Infinity, left: -Infinity, right: Infinity });
+  const BUFFER = 200; // px buffer around viewport
 
   const updateViewport = useCallback(() => {
     const el = containerRef.current;
     if (!el) return;
+    const rect = el.getBoundingClientRect();
+    // Convert page-viewport coords into the SVG's local coord space by
+    // subtracting the container's offset within the page.
     setViewport({
-      top: el.scrollTop - BUFFER,
-      bottom: el.scrollTop + el.clientHeight + BUFFER,
-      left: el.scrollLeft - BUFFER,
-      right: el.scrollLeft + el.clientWidth + BUFFER,
+      top: -rect.top - BUFFER,
+      bottom: -rect.top + window.innerHeight + BUFFER,
+      left: -rect.left - BUFFER,
+      right: -rect.left + window.innerWidth + BUFFER,
     });
   }, []);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
     updateViewport();
-    el.addEventListener('scroll', updateViewport, { passive: true });
-    return () => el.removeEventListener('scroll', updateViewport);
+    window.addEventListener('scroll', updateViewport, { passive: true });
+    window.addEventListener('resize', updateViewport, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', updateViewport);
+      window.removeEventListener('resize', updateViewport);
+    };
   }, [updateViewport]);
 
   // If tree is small (<40 nodes), skip culling entirely
@@ -203,7 +210,7 @@ export function PhylogeneticTree({
   }
 
   return (
-    <div ref={containerRef} className="overflow-y-auto overflow-x-hidden w-full" style={{ maxHeight: '70vh' }}>
+    <div ref={containerRef} className="overflow-x-hidden w-full">
       <svg width={width} height={height} className="mx-auto block">
         <defs>
           <filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="140%">

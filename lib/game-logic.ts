@@ -33,7 +33,7 @@ export function createInitialState(
     isWon: false,
     guessesUsed: 0,
     maxGuesses: 20,
-    hintDepth: 0,
+    hintedDepths: [],
     periodRevealed: false,
     date: new Date().toDateString(),
   };

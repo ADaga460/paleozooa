@@ -151,12 +151,13 @@ export function GameBoard() {
           : `The answer was ${mystery.commonName}.`,
       };
     }
-    if (gameState.guesses.length === 0 && gameState.hintDepth === 0) return null;
-    // Use the DEEPEST of: best LCA across all guesses, or hint depth
+    const maxHinted = gameState.hintedDepths.length > 0 ? Math.max(...gameState.hintedDepths) : 0;
+    if (gameState.guesses.length === 0 && maxHinted === 0) return null;
+    // Use the DEEPEST of: best LCA across all guesses, or max hinted depth
     const best = gameState.guesses.length > 0
       ? findBestLCA(gameState.guesses, mystery)
       : { depth: 0 };
-    const deepest = Math.max(best.depth, gameState.hintDepth);
+    const deepest = Math.max(best.depth, maxHinted);
     const taxonName = mystery.taxonomyPath[deepest];
     const rank = mystery.taxonomyRanks[deepest];
     return {
@@ -197,7 +198,7 @@ export function GameBoard() {
   // Compute current effective depth for tree hint disabled check
   const currentEffectiveDepth = useMemo(() => {
     if (!gameState) return 0;
-    let depth = gameState.hintDepth;
+    let depth = gameState.hintedDepths.length > 0 ? Math.max(...gameState.hintedDepths) : 0;
     for (const guess of gameState.guesses) {
       if (guess.id === gameState.mysteryOrganism.id) continue;
       const lca = findLCA(guess.taxonomyPath, gameState.mysteryOrganism.taxonomyPath);
@@ -206,13 +207,16 @@ export function GameBoard() {
     return depth;
   }, [gameState]);
 
+  // Hints must leave at least 1 playable guess after they're spent — using
+  // `>=` (not `>`) so the hint never directly transitions the game to
+  // complete and reveals the answer leaf.
   const treeHintDisabled = !gameState || gameState.isComplete ||
-    gameState.guessesUsed + 4 > gameState.maxGuesses ||
+    gameState.guessesUsed + 4 >= gameState.maxGuesses ||
     currentEffectiveDepth + 1 > (gameState?.mysteryOrganism.taxonomyPath.length ?? 0) - 2;
 
   const periodHintDisabled = !gameState || gameState.isComplete ||
     gameState.periodRevealed ||
-    gameState.guessesUsed + 1 > gameState.maxGuesses;
+    gameState.guessesUsed + 1 >= gameState.maxGuesses;
 
   const handleNodeClick = (node: TaxonomyNode) => {
     trackTreeNodeClick(node.name, node.rank);

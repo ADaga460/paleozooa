@@ -24,7 +24,21 @@ export function loadGameState(
       ? `paleozooa-daily-${difficulty}-${date}`
       : `paleozooa-practice-${difficulty}`;
   const raw = localStorage.getItem(key);
-  return raw ? (JSON.parse(raw) as GameState) : null;
+  if (!raw) return null;
+  const parsed = JSON.parse(raw) as Partial<GameState> & { hintDepth?: number };
+  // Migrate from the old `hintDepth: number` shape. Old saves used a scalar
+  // that implied "all depths from 1..hintDepth are revealed" (a chain from
+  // root), but the new semantics is "each hint reveals exactly one depth".
+  // For in-progress saves we preserve only the deepest hinted level — any
+  // earlier hint levels implied by the old chain behavior are dropped.
+  if (!Array.isArray(parsed.hintedDepths)) {
+    const legacy = typeof parsed.hintDepth === 'number' && parsed.hintDepth > 0
+      ? [parsed.hintDepth]
+      : [];
+    parsed.hintedDepths = legacy;
+    delete parsed.hintDepth;
+  }
+  return parsed as GameState;
 }
 
 function defaultStats(): Stats {

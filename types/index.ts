@@ -28,7 +28,13 @@ export interface GameState {
   isWon: boolean;
   guessesUsed: number;
   maxGuesses: number;
-  hintDepth: number;
+  /**
+   * Spine depths (indices into mysteryOrganism.taxonomyPath) that have been
+   * revealed by tree hints. Each hint click adds exactly one new depth — the
+   * single "next clade" past whatever is currently visible. Does NOT imply
+   * ancestors are also revealed (those come from guess LCAs, if any).
+   */
+  hintedDepths: number[];
   periodRevealed: boolean;
   date?: string;
 }

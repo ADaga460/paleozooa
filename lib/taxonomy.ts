@@ -46,15 +46,18 @@ export function buildGameTree(gameState: GameState): TaxonomyNode {
 
   // Collect which spine indices to show:
   //  - 0 (root) always
-  //  - 0..hintDepth (hints reveal continuously)
+  //  - each hinted depth (single node per hint, NOT a chain from root —
+  //    a hint reveals exactly one LCA on the spine)
   //  - each guess's LCA depth
-  //  - if game complete: all indices
+  //  - if game complete: the answer leaf
   const shownIndices = new Set<number>();
   shownIndices.add(0); // root always
 
-  // Hints reveal a continuous chain from root
-  for (let i = 0; i <= gameState.hintDepth; i++) {
-    shownIndices.add(i);
+  // Each hint reveals one specific spine depth. Ancestors are filled in
+  // independently by guess LCAs — hints do NOT imply "everything above is
+  // also revealed" (that was the old bug that exposed the whole tree).
+  for (const d of gameState.hintedDepths) {
+    if (d > 0 && d < mysteryPath.length) shownIndices.add(d);
   }
 
   // Each guess's LCA depth

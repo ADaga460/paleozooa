@@ -5,3 +5,22 @@ html, body {
   color: #3d3426;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
+
+/* Hide scrollbars everywhere — page still scrolls (mouse wheel, touch,
+   keyboard, trackpad) but no scrollbar UI is rendered. The user knows how
+   to scroll; the bare scrollbar was visually noisy and made the layout
+   feel cramped on the right edge. */
+html {
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/old Edge */
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;                  /* Chrome/Safari/new Edge */
+}
+* {
+  scrollbar-width: none;
+}
